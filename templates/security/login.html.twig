@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CarXMeet - Connexion{% endblock %}
+
+{% block body %}
+    <main style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+        <section style="width: 100%; max-width: 420px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+            <h1 style="margin: 0 0 16px; font-size: 22px;">Connexion</h1>
+
+            {% if error %}
+                <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('security.login') }}" style="display: grid; gap: 12px;">
+                <div style="display: grid; gap: 6px;">
+                    <label for="username" style="font-size: 14px;">Nom d'utilisateur</label>
+                    <input
+                        id="username"
+                        name="_username"
+                        type="text"
+                        required
+                        autocomplete="username"
+                        value="{{ last_username|default('') }}"
+                        style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;"
+                    >
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    <label for="password" style="font-size: 14px;">Mot de passe</label>
+                    <input
+                        id="password"
+                        name="_password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;"
+                    >
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                    Se connecter
+                </button>
+            </form>
+        </section>
+    </main>
+
+{% endblock %}
