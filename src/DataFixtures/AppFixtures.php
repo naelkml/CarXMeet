@@ -3,52 +3,86 @@
 namespace App\DataFixtures;
 
 use App\Entity\User;
-use App\Entity\Events;
 use App\Entity\Vehicle;
+use App\Entity\Events;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $passwordHasher;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
-        // Créer 10 utilisateurs
-        for ($i = 1; $i <= 10; $i++) {
-            $user = new User();
-            $user->setFirstName("firstName$i");
-            $user->setLastName("lastname$i");
-            $user->setEmail("user$i@test.com");
-            $user->setUsername("User$i");
-            $user->setPhone("060000000$i");
-            $user->setCreatedAt(new \DateTimeImmutable());
-            $manager->persist($user);
+        $faker = Factory::create('fr_FR');
 
-            // Chaque user a un véhicule
-            $vehicle = new Vehicle();
-            $vehicle->setBrand("Marque$i");
-            $vehicle->setModel("Modele$i");
-            $vehicle->setYear(2000 + $i);
-            $vehicle->setEngine("Moteur$i");
-            $vehicle->setUserID($user);
-            $vehicle->setPreparation(preparation: "stance$i");
-            $manager->persist($vehicle);
+        $users = [];
+
+        // ----- USERS -----
+        for ($i = 0; $i < 50; $i++) {
+            $user = new User();
+            $user->setFirstName($faker->firstName())
+                ->setLastName($faker->lastName())
+                ->setUsername($faker->userName())
+                ->setEmail($faker->unique()->safeEmail())
+                ->setPhone($faker->phoneNumber())
+                ->setCreatedAt(new \DateTimeImmutable());
+
+            // Réseaux sociaux aléatoires
+            $user->setInstagram($faker->boolean(70) ? $faker->userName() : null);
+            $user->setSnapchat($faker->boolean(50) ? $faker->userName() : null);
+            $user->setTwitter($faker->boolean(40) ? $faker->userName() : null);
+            $user->setTiktok($faker->boolean(30) ? $faker->userName() : null);
+
+            // Password hashé
+            $user->setPassword($this->passwordHasher->hashPassword($user, 'password123'));
+
+            $manager->persist($user);
+            $users[] = $user;
+
+            // 1 à 3 véhicules par user
+            $numVehicles = $faker->numberBetween(1, 3);
+            for ($j = 0; $j < $numVehicles; $j++) {
+                $vehicle = new Vehicle();
+                $vehicle->setBrand($faker->company())
+                    ->setModel($faker->word())
+                    ->setYear($faker->numberBetween(1995, 2023))
+                    ->setEngine($faker->randomElement(['1.2L', '1.6L', '2.0L', '2.5L turbo']))
+                    ->setPreparation($faker->randomElement(['stance', 'drift', 'jdm', 'run']))
+                    ->setUserID($user);
+
+                $manager->persist($vehicle);
+            }
         }
 
-        // Créer 3 events
-        for ($i = 1; $i <= 3; $i++) {
+        // ----- EVENTS -----
+        $eventTypes = ['Run', 'JDM', 'Drift', 'Stance'];
+        $regions = ['Bouches-du-Rhône', 'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'];
+        $date = $faker->dateTimeBetween('-1 year', '+1 year');
+
+
+        for ($i = 0; $i < 15; $i++) {
             $event = new Events();
-            $event->setTitle("Event $i");
-            $event->setDescription("Description de l'event $i");
-            $event->setLocation("Bouches-du-Rhône");
-            $event->setType("Run");
-            $event->setDate("2021-05-0$i");
-            $event->setCoverPhoto(coverPhoto: "https://picsum.photos/200/300?random=$i");
-            $event->setGallery(gallery:"photo1");
-            $event->setRatingAverage(ratingAverage: 4.5);
-            $event->setCreatedAt(new \DateTimeImmutable());
+            $event->setDate($date->format('Y-m-d'));
+            $event->setTitle($faker->sentence(3))
+                ->setDescription($faker->paragraph(2))
+                ->setLocation($faker->randomElement($regions))
+                ->setType($faker->randomElement($eventTypes))
+                ->setCoverPhoto($faker->imageUrl(640, 480, 'cars', true))
+                ->setGallery(implode(',', [$faker->imageUrl(), $faker->imageUrl(), $faker->imageUrl()]))
+                ->setRatingAverage($faker->randomFloat(1, 1, 5))
+                ->setCreatedAt(new \DateTimeImmutable());
+
             $manager->persist($event);
         }
 
-        $manager->flush(); // Envoie tout en BDD
+        $manager->flush();
     }
 }

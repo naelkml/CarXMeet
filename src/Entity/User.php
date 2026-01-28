@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Entity;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -8,8 +10,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+# [ORM\EntityListeners('App\EventListener\UserListener')]
+
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
+
+    #[ORM\Column(length: 255)]
+    private string $password;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -27,8 +36,9 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $phone = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
+
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $snapchat = null;
@@ -424,5 +434,37 @@ class User
 
         return $this;
     }
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        return $this->roles ?: ['ROLE_USER'];
+    }
+
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // leave empty
+    }
+
 
 }
