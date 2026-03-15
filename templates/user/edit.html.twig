@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CarXMeet - Mon profil{% endblock %}
+
+{% block body %}
+    <main style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+        <section style="width: 100%; max-width: 560px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+            <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+                <h1 style="margin: 0; font-size: 22px;">Mon profil</h1>
+                <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                    Retour accueil
+                </a>
+            </header>
+
+            {% for message in app.flashes('success') %}
+                <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_start(form, { attr: { style: 'display: grid; gap: 12px;' } }) }}
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.firstName, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.firstName, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.lastName, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.lastName, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.username, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.username, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.username) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.email, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.email, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.email) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.phone, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.phone, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.phone) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.snapchat, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.snapchat, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.snapchat) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.instagram, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.instagram, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.instagram) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.twitter, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.twitter, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.twitter) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.tiktok, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.tiktok, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.tiktok) }}
+                </div>
+
+                <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                    Enregistrer
+                </button>
+            {{ form_end(form) }}
+        </section>
+    </main>
+{% endblock %}
