@@ -7,12 +7,19 @@ use App\Form\RegistrationType;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class SecurityController extends AbstractController
 {
+    #[Route('/home', name: 'app_home', methods: ['GET'])]
+    public function home(): Response
+    {
+        return $this->render('security/home.html.twig');
+    }
+
     #[Route('/connexion', name: 'security.login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -25,11 +32,11 @@ final class SecurityController extends AbstractController
     #[Route('/deconnexion', name: 'security.logout')]
     public function logout()
     {
-
+        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
     #[Route('/inscription', name: 'security.registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $manager): Response
+    public function registration(Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $user = new User();
         $form = $this->createForm(RegistrationType::class, $user);
@@ -43,6 +50,8 @@ final class SecurityController extends AbstractController
                 'bienvenue sur CarXMeet !'
             );
 
+            // Hash the plain password from the form before saving.
+            $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
             $user->setCreatedAt(new \DateTimeImmutable());
             $manager->persist($user);
             $manager->flush();

@@ -436,7 +436,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
     public function getUserIdentifier(): string
     {
-        return $this->email;
+        // The firewall/provider is configured to load users by "username".
+        return (string) $this->username;
     }
 
     public function getRoles(): array
