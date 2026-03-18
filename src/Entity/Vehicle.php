@@ -31,9 +31,8 @@ class Vehicle
     #[ORM\Column(length: 255)]
     private ?string $preparation = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $photos = null;
-
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $photos;
     public function getId(): ?int
     {
         return $this->id;
@@ -111,15 +110,34 @@ class Vehicle
         return $this;
     }
 
-    public function getPhotos(): ?string
+    public function getPhotos()
     {
         return $this->photos;
     }
 
-    public function setPhotos(?string $photos): static
+    public function setPhotos($photos): self
     {
         $this->photos = $photos;
-
         return $this;
     }
+
+    public function getImageBase64(): ?string
+    {
+        if (!$this->photos) {
+            return null;
+        }
+
+        if (is_resource($this->photos)) {
+            $meta = stream_get_meta_data($this->photos);
+            if (!empty($meta['seekable'])) {
+                rewind($this->photos);
+            }
+            $data = stream_get_contents($this->photos);
+        } else {
+            $data = $this->photos;
+        }
+
+        return base64_encode($data);
+    }
 }
+

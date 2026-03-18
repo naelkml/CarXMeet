@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Vehicle;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -28,8 +29,8 @@ final class VehicleType extends AbstractType
             ->add('preparation', TextType::class, [
                 'label' => 'Préparation',
             ])
-            ->add('photos', TextType::class, [
-                'label' => 'Photos (URL)',
+            ->add('photos', FileType::class, [
+                'mapped' => false,
                 'required' => false,
             ]);
     }

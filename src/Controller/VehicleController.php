@@ -30,6 +30,13 @@ final class VehicleController extends AbstractController
         $form = $this->createForm(VehicleType::class, $vehicle);
         $form->handleRequest($request);
 
+        $photos = $form->get('photos')->getData();
+
+        if ($photos) {
+            $imageData = file_get_contents($photos->getPathname());
+            $vehicle->setPhotos($imageData);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($vehicle);
             $em->flush();
