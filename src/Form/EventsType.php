@@ -7,6 +7,7 @@ use App\Entity\Region;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -23,7 +24,7 @@ final class EventsType extends AbstractType
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
             ])
-            ->add('Organisateur', TextType::class, [
+            ->add('organisateur', TextType::class, [
                 'label' => 'Organisateur',
             ])
             ->add('type', ChoiceType::class, [
@@ -41,8 +42,10 @@ final class EventsType extends AbstractType
             ->add('location', TextType::class, [
                 'label' => 'Lieu',
             ])
-            ->add('coverPhoto', TextType::class, [
-                'label' => 'Cover (URL)',
+            ->add('coverPhoto', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Cover',
             ])
             ->add('gallery', TextType::class, [
                 'label' => 'Galerie (URLs séparées par des virgules)',
@@ -57,6 +60,7 @@ final class EventsType extends AbstractType
                 'choice_label' => 'name',
                 'placeholder' => 'Choisir une région',
             ]);
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -66,4 +70,3 @@ final class EventsType extends AbstractType
         ]);
     }
 }
-

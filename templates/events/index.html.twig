@@ -5,6 +5,41 @@
 {% endblock %}
 
 {% block body %}
+    <style>
+        .event-card {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 12px;
+            align-items: start;
+            padding: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+        .event-media {
+            width: 120px;
+            height: 90px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
+            border: 1px solid #e5e7eb;
+        }
+        .event-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        @media (max-width: 520px) {
+            .event-card {
+                grid-template-columns: 90px 1fr;
+            }
+            .event-media {
+                width: 90px;
+                height: 72px;
+            }
+        }
+    </style>
+
     <main style="min-height: 100vh; padding: 24px;">
         <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
             <div>
@@ -42,8 +77,20 @@
 
         <div style="display: grid; gap: 10px;">
             {% for event in events %}
-                <article style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
-                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                {% set img64 = event.imageBase64 %}
+
+                <article class="event-card">
+                    <a class="event-media" href="{{ path('app_events_show', { id: event.id }) }}" style="text-decoration: none;">
+                        {% if img64 %}
+                            <img src="data:image/jpeg;base64,{{ img64 }}" alt="Cover {{ event.title }}" loading="lazy" decoding="async">
+                        {% else %}
+                            <span style="width: 100%; height: 100%; display: grid; place-items: center; color: #e5e7eb; font-size: 12px;">
+                                Cover
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <div>
                         <div>
                             <a href="{{ path('app_events_show', { id: event.id }) }}" style="text-decoration: none; color: #111827;">
                                 <h2 style="margin: 0; font-size: 18px;">{{ event.title }}</h2>
@@ -56,24 +103,25 @@
                             </div>
                         </div>
 
-                        {% if is_granted('ROLE_EVENT_MANAGER') %}
+                        <p style="margin: 10px 0 0; color: #374151;">
+                            {{ event.description|slice(0, 200) }}{% if event.description|length > 200 %}…{% endif %}
+                        </p>
+                    </div>
+
+                    {% if is_granted('ROLE_EVENT_MANAGER') %}
+                        <div style="display: grid; gap: 10px; justify-items: end;">
                             <a href="{{ path('app_events_edit', { id: event.id }) }}" style="font-size: 14px; text-decoration: none; color: #111827;">
                                 Modifier
                             </a>
-                            {% if is_granted('ROLE_EVENT_MANAGER') %}
-                                <form method="post" action="{{ path('app_events_delete', { id: event.id }) }}" style="margin-top: 14px;" onsubmit="return confirm('Supprimer cet événement ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
-                                    <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
-                                        Supprimer
-                                    </button>
-                                </form>
-                            {% endif %}
-                        {% endif %}
-                    </div>
+                            <form method="post" action="{{ path('app_events_delete', { id: event.id }) }}" onsubmit="return confirm('Supprimer cet événement ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                                <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
 
-                    <p style="margin: 10px 0 0; color: #374151;">
-                        {{ event.description|slice(0, 200) }}{% if event.description|length > 200 %}…{% endif %}
-                    </p>
                 </article>
             {% else %}
                 <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
@@ -83,4 +131,3 @@
         </div>
     </main>
 {% endblock %}
-

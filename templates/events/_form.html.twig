@@ -6,15 +6,15 @@
     </div>
 
     <div style="display: grid; gap: 6px;">
-        {{ form_label(form.description, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-        {{ form_widget(form.description, { attr: { rows: 6, style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-        {{ form_errors(form.description) }}
+        {{ form_label(form.organisateur, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+        {{ form_widget(form.organisateur, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+        {{ form_errors(form.organisateur) }}
     </div>
 
     <div style="display: grid; gap: 6px;">
-        {{ form_label(form.Organisateur, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-        {{ form_widget(form.Organisateur, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-        {{ form_errors(form.Organisateur) }}
+        {{ form_label(form.description, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+        {{ form_widget(form.description, { attr: { rows: 6, style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+        {{ form_errors(form.description) }}
     </div>
 
     <div style="display: grid; gap: 6px;">
@@ -43,7 +43,7 @@
 
     <div style="display: grid; gap: 6px;">
         {{ form_label(form.coverPhoto, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-        {{ form_widget(form.coverPhoto, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+        {{ form_widget(form.coverPhoto, { attr: { accept: 'image/*', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
         {{ form_errors(form.coverPhoto) }}
     </div>
 
@@ -63,4 +63,3 @@
         Enregistrer
     </button>
 {{ form_end(form) }}
-

@@ -58,7 +58,15 @@ final class EventsController extends AbstractController
         $form = $this->createForm(EventsType::class, $event);
         $form->handleRequest($request);
 
+        $CoverPhoto = $form->get('coverPhoto')->getData();
+
+        if ($CoverPhoto) {
+            $imageData = file_get_contents($CoverPhoto->getPathname());
+            $event->setCoverPhoto($imageData);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+
             if (!$event->getRatingAverage()) {
                 $event->setRatingAverage('0');
             }
@@ -83,7 +91,15 @@ final class EventsController extends AbstractController
         $form = $this->createForm(EventsType::class, $event);
         $form->handleRequest($request);
 
+        $CoverPhoto = $form->get('coverPhoto')->getData();
+
+        if ($CoverPhoto) {
+            $imageData = file_get_contents($CoverPhoto->getPathname());
+            $event->setCoverPhoto($imageData);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+
             if (!$event->getRatingAverage()) {
                 $event->setRatingAverage('0');
             }

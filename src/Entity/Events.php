@@ -22,8 +22,8 @@ class Events
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $coverPhoto = null;
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $coverPhoto;
 
     #[ORM\Column(length: 255)]
     private ?string $gallery = null;
@@ -107,16 +107,35 @@ class Events
         return $this;
     }
 
-    public function getCoverPhoto(): ?string
+
+    public function getCoverPhoto()
     {
         return $this->coverPhoto;
     }
 
-    public function setCoverPhoto(string $coverPhoto): static
+    public function setCoverPhoto($coverPhoto): self
     {
         $this->coverPhoto = $coverPhoto;
-
         return $this;
+    }
+
+    public function getImageBase64(): ?string
+    {
+        if (!$this->coverPhoto) {
+            return null;
+        }
+
+        if (is_resource($this->coverPhoto)) {
+            $meta = stream_get_meta_data($this->coverPhoto);
+            if (!empty($meta['seekable'])) {
+                rewind($this->coverPhoto);
+            }
+            $data = stream_get_contents($this->coverPhoto);
+        } else {
+            $data = $this->coverPhoto;
+        }
+
+        return base64_encode($data);
     }
 
     public function getGallery(): ?string
