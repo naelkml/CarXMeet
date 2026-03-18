@@ -24,7 +24,6 @@ class AppFixtures extends Fixture
     {
         $faker = Factory::create('fr_FR');
 
-        // ----- REGIONS (France 2026 + libellés officiels) -----
         $regionNames = [
             'Auvergne-Rhône-Alpes',
             'Bourgogne-Franche-Comté',
