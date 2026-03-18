@@ -17,7 +17,7 @@ final class CrewController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
+    #[Route('/api/crews', name: 'api_crews_list', methods: ['GET'])]
     public function list(CrewRepository $crewRepository): Response
     {
         $crews = $crewRepository->findAll();

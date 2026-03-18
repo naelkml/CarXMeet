@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Region;
 use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Entity\Events;
@@ -23,9 +24,52 @@ class AppFixtures extends Fixture
     {
         $faker = Factory::create('fr_FR');
 
+        // ----- REGIONS (France 2026 + libellés officiels) -----
+        $regionNames = [
+            'Auvergne-Rhône-Alpes',
+            'Bourgogne-Franche-Comté',
+            'Bretagne',
+            'Centre-Val de Loire',
+            'Corse',
+            'Grand Est',
+            'Hauts-de-France',
+            'Île-de-France',
+            'Normandie',
+            'Nouvelle-Aquitaine',
+            'Occitanie',
+            'Pays de la Loire',
+            'Provence-Alpes-Côte d\'Azur',
+            'Guadeloupe',
+            'Martinique',
+            'Guyane',
+            'La Réunion',
+            'Mayotte',
+        ];
+
+        $regions = [];
+        foreach ($regionNames as $name) {
+            $region = new Region();
+            $region->setName($name);
+            $manager->persist($region);
+            $regions[] = $region;
+        }
+
         $users = [];
 
         // ----- USERS -----
+        // Un compte "manager" pour pouvoir créer/modifier/supprimer des événements.
+        $eventManager = new User();
+        $eventManager->setFirstName('Event')
+            ->setLastName('Manager')
+            ->setUsername('event_manager')
+            ->setEmail('event_manager@example.com')
+            ->setPhone('0600000000')
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setRoles(['ROLE_USER', 'ROLE_EVENT_MANAGER'])
+            ->setPassword($this->passwordHasher->hashPassword($eventManager, 'password123'));
+        $manager->persist($eventManager);
+        $users[] = $eventManager;
+
         for ($i = 0; $i < 50; $i++) {
             $user = new User();
             $user->setFirstName($faker->firstName())
@@ -53,7 +97,7 @@ class AppFixtures extends Fixture
                 $vehicle = new Vehicle();
                 $vehicle->setBrand($faker->company())
                     ->setModel($faker->word())
-                    ->setYear($faker->numberBetween(1995, 2023))
+                    ->setYear((string) $faker->numberBetween(1995, 2023))
                     ->setEngine($faker->randomElement(['1.2L', '1.6L', '2.0L', '2.5L turbo']))
                     ->setPreparation($faker->randomElement(['stance', 'drift', 'jdm', 'run']))
                     ->setUserID($user);
@@ -64,21 +108,20 @@ class AppFixtures extends Fixture
 
         // ----- EVENTS -----
         $eventTypes = ['Run', 'JDM', 'Drift', 'Stance'];
-        $regions = ['Bouches-du-Rhône', 'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'];
-        $date = $faker->dateTimeBetween('-1 year', '+1 year');
-
 
         for ($i = 0; $i < 15; $i++) {
             $event = new Events();
+            $date = $faker->dateTimeBetween('-1 year', '+1 year');
             $event->setDate($date->format('Y-m-d'));
             $event->setTitle($faker->sentence(3))
                 ->setDescription($faker->paragraph(2))
-                ->setLocation($faker->randomElement($regions))
+                ->setLocation($faker->city())
                 ->setType($faker->randomElement($eventTypes))
                 ->setCoverPhoto($faker->imageUrl(640, 480, 'cars', true))
                 ->setGallery(implode(',', [$faker->imageUrl(), $faker->imageUrl(), $faker->imageUrl()]))
-                ->setRatingAverage($faker->randomFloat(1, 1, 5))
-                ->setCreatedAt(new \DateTimeImmutable());
+                ->setRatingAverage((string) $faker->randomFloat(1, 1, 5))
+                ->setCreatedAt(new \DateTimeImmutable())
+                ->setRegionID($faker->randomElement($regions));
 
             $manager->persist($event);
         }

@@ -17,7 +17,7 @@ final class ArticlesController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
+    #[Route('/api/articles', name: 'api_articles_list', methods: ['GET'])]
     public function list(ArticlesRepository $articlesRepository): Response
     {
         $articles = $articlesRepository->findAll();

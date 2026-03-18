@@ -17,7 +17,7 @@ final class FriendshipController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
+    #[Route('/api/friendships', name: 'api_friendships_list', methods: ['GET'])]
     public function list(FriendshipRepository $friendshipRepository): Response
     {
         $friendships = $friendshipRepository->findAll();

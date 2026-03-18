@@ -37,6 +37,11 @@ security:
     access_control:
         - { path: ^/home, roles: ROLE_USER }
         - { path: ^/profil, roles: ROLE_USER }
+        - { path: ^/garage, roles: ROLE_USER }
+        - { path: ^/events/new, roles: ROLE_EVENT_MANAGER }
+        - { path: ^/events/\d+/edit, roles: ROLE_EVENT_MANAGER }
+        - { path: ^/events/\d+/delete, roles: ROLE_EVENT_MANAGER }
+        - { path: ^/events, roles: ROLE_USER }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

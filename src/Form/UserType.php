@@ -20,8 +20,6 @@ class UserType extends AbstractType
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
             ])
-            // Username is used to authenticate users in security.yaml.
-            // Editing it is allowed, but it must remain unique.
             ->add('username', TextType::class, [
                 'label' => "Nom d'utilisateur",
             ])

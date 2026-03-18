@@ -1,20 +1,31 @@
-{% extends 'base.html.twig' %}
+{% extends "base.html.twig" %}
 
-{% block title %}Hello RegionController!{% endblock %}
+{% block title %}
+    CarXMeet - Régions
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <main style="min-height: 100vh; padding: 24px;">
+        <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+            <h1 style="margin: 0; font-size: 22px;">Régions</h1>
+            <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                Retour accueil
+            </a>
+        </header>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/Users/naelkhamallah/CarXMeet/src/Controller/RegionController.php</code></li>
-        <li>Your template at <code>/Users/naelkhamallah/CarXMeet/templates/region/index.html.twig</code></li>
-    </ul>
-</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            {% for region in regions %}
+                <a
+                    href="{{ path('app_events', { region: region.id }) }}"
+                    style="display: block; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; text-decoration: none; color: #111827;"
+                >
+                    <div style="font-weight: 700;">{{ region.name }}</div>
+                </a>
+            {% else %}
+                <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                    Aucune région en base.
+                </div>
+            {% endfor %}
+        </div>
+    </main>
 {% endblock %}

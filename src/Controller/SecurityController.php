@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationType;
+use App\Repository\RegionRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,9 +16,13 @@ use Symfony\Component\Routing\Attribute\Route;
 final class SecurityController extends AbstractController
 {
     #[Route('/home', name: 'app_home', methods: ['GET'])]
-    public function home(): Response
+    public function home(RegionRepository $regionRepository): Response
     {
-        return $this->render('security/home.html.twig');
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        return $this->render('security/home.html.twig', [
+            'regions' => $regionRepository->findBy([], ['name' => 'ASC']),
+        ]);
     }
 
     #[Route('/connexion', name: 'security.login', methods: ['GET', 'POST'])]
@@ -32,6 +37,7 @@ final class SecurityController extends AbstractController
     #[Route('/deconnexion', name: 'security.logout')]
     public function logout()
     {
+        $this->render('security/login.html.twig');
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 

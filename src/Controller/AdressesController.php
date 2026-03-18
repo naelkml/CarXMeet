@@ -17,7 +17,7 @@ final class AdressesController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
+    #[Route('/api/adresses', name: 'api_adresses_list', methods: ['GET'])]
     public function list(AdressesRepository $adressesRepository): Response
     {
         $adresses = $adressesRepository->findAll();

@@ -13,5 +13,30 @@
                 Modifier mon profil
             </a>
         </div>
+        <div style="margin-top: 12px;">
+            <a href="{{ path('security.logout') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                Se déconnecter
+            </a>
+        </div>
+
+
+        <section style="margin-top: 18px;">
+            <h2 style="margin: 0 0 10px; font-size: 18px;">Régions</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                {% for region in regions %}
+                    <a
+                        href="{{ path('app_events', { region: region.id }) }}"
+                        style="display: block; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; text-decoration: none; color: #111827;"
+                    >
+                        <div style="font-weight: 700;">{{ region.name }}</div>
+                    </a>
+                {% else %}
+                    <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                        Aucune région en base. (Les fixtures/migrations doivent ajouter les régions.)
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 {% endblock %}

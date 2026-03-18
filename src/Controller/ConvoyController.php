@@ -17,7 +17,7 @@ final class ConvoyController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
+    #[Route('/api/convoys', name: 'api_convoys_list', methods: ['GET'])]
     public function list(ConvoyRepository $convoyRepository): Response
     {
         $convoys = $convoyRepository->findAll();

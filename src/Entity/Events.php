@@ -43,6 +43,9 @@ class Events
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $organisateur = null;
+
     #[ORM\ManyToOne(inversedBy: 'events')]
     private ?Region $regionID = null;
 
@@ -90,6 +93,17 @@ class Events
     {
         $this->description = $description;
 
+        return $this;
+    }
+
+    public function getOrganisateur(): ?string
+    {
+        return $this->organisateur;
+    }
+
+    public function setOrganisateur(string $organisateur): static
+    {
+        $this->organisateur = $organisateur;
         return $this;
     }
 

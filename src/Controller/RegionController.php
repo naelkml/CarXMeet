@@ -9,18 +9,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class RegionController extends AbstractController
 {
-    #[Route('/region', name: 'app_region')]
-    public function index(): Response
+    #[Route('/regions', name: 'app_regions', methods: ['GET'])]
+    public function index(RegionRepository $regionRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         return $this->render('region/index.html.twig', [
-            'controller_name' => 'RegionController',
+            'regions' => $regionRepository->findBy([], ['name' => 'ASC']),
         ]);
     }
-
-    #[Route('/', name: 'list', methods: ['GET'])]
-    public function list(RegionRepository $regionRepository): Response
-    {
-        $regions = $regionRepository->findAll();
-        return $this->json($regions);
-    }
 }
+

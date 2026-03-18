@@ -7,9 +7,14 @@
         <section style="width: 100%; max-width: 560px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
             <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
                 <h1 style="margin: 0; font-size: 22px;">Mon profil</h1>
-                <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
-                    Retour accueil
-                </a>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a href="{{ path('app_garage') }}" style="display: inline-block; padding: 8px 10px; border-radius: 10px; background: #111827; color: white; text-decoration: none; font-size: 14px;">
+                        Mon garage
+                    </a>
+                    <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                        Retour accueil
+                    </a>
+                </div>
             </header>
 
             {% for message in app.flashes('success') %}

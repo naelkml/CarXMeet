@@ -17,10 +17,10 @@ final class PostphotoController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'list', methods: ['GET'])]
-    public function list(PostphotoRepository $PostphotoRepository): Response
+    #[Route('/api/postphotos', name: 'api_postphotos_list', methods: ['GET'])]
+    public function list(PostphotoRepository $postphotoRepository): Response
     {
-        $postphotos = $PostphotoRepository->findAll();
+        $postphotos = $postphotoRepository->findAll();
         return $this->json($postphotos);
     }
 }

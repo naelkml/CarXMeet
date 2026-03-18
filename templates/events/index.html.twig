@@ -1,20 +1,86 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello EventsController!{% endblock %}
+{% block title %}
+    CarXMeet - Événements
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <main style="min-height: 100vh; padding: 24px;">
+        <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+            <div>
+                <h1 style="margin: 0; font-size: 22px;">Événements</h1>
+                {% if region %}
+                    <div style="margin-top: 4px; font-size: 13px; color: #6b7280;">
+                        Région: <strong style="color: #111827;">{{ region.name }}</strong>
+                    </div>
+                {% endif %}
+            </div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                    Retour accueil
+                </a>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/Users/naelkhamallah/CarXMeet/src/Controller/EventsController.php</code></li>
-        <li>Your template at <code>/Users/naelkhamallah/CarXMeet/templates/events/index.html.twig</code></li>
-    </ul>
-</div>
+                {% if is_granted('ROLE_EVENT_MANAGER') %}
+                    <a href="{{ path('app_events_new') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                        Créer un événement
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+
+        {% for message in app.flashes('success') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div style="display: grid; gap: 10px;">
+            {% for event in events %}
+                <article style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                        <div>
+                            <a href="{{ path('app_events_show', { id: event.id }) }}" style="text-decoration: none; color: #111827;">
+                                <h2 style="margin: 0; font-size: 18px;">{{ event.title }}</h2>
+                            </a>
+                            <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                                {{ event.date }} · {{ event.location }}
+                                {% if event.regionID %}
+                                    · {{ event.regionID.name }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if is_granted('ROLE_EVENT_MANAGER') %}
+                            <a href="{{ path('app_events_edit', { id: event.id }) }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                                Modifier
+                            </a>
+                            {% if is_granted('ROLE_EVENT_MANAGER') %}
+                                <form method="post" action="{{ path('app_events_delete', { id: event.id }) }}" style="margin-top: 14px;" onsubmit="return confirm('Supprimer cet événement ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                                    <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <p style="margin: 10px 0 0; color: #374151;">
+                        {{ event.description|slice(0, 200) }}{% if event.description|length > 200 %}…{% endif %}
+                    </p>
+                </article>
+            {% else %}
+                <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                    Aucun événement pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+    </main>
 {% endblock %}
+

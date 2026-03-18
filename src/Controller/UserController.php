@@ -65,7 +65,6 @@ final class UserController extends AbstractController
                 $em->flush();
                 $this->addFlash('success', 'Profil mis a jour.');
             } catch (UniqueConstraintViolationException) {
-                // If you add DB unique indexes (recommended), keep a friendly message.
                 $this->addFlash('error', "Email ou nom d'utilisateur deja utilise.");
             }
 
