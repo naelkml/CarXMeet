@@ -1,0 +1,11 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Vérification Email{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Adresse email vérifiée</h1>
+        <p class="mb-3">Ton compte est maintenant activé. Tu peux te connecter.</p>
+        <a href="{{ path('security.login') }}" class="btn btn-primary">Se connecter</a>
+    </div>
+{% endblock %}

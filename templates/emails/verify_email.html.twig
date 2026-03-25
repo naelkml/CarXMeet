@@ -1,0 +1,16 @@
+<h2>Bienvenue sur CarXMeet</h2>
+
+<p>Merci pour ton inscription.</p>
+
+<p>
+    Clique sur le lien ci-dessous pour vérifier ton adresse email :
+</p>
+
+<p>
+    <a href="{{ signedUrl }}">Confirmer mon email</a>
+</p>
+
+<p>
+    Ce lien expirera
+    {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
+</p>

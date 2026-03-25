@@ -11,6 +11,16 @@
                 <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
                     {{ error.messageKey|trans(error.messageData, 'security') }}
                 </div>
+
+                {% if show_resend_button and last_username %}
+                    <form method="post" action="{{ path('security.resend_verification_email') }}" style="margin: 0 0 12px;">
+                        <input type="hidden" name="username" value="{{ last_username }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('resend_verification_email') }}">
+                        <button type="submit" style="padding: 10px 12px; border: 1px solid #1d4ed8; border-radius: 10px; background: #2563eb; color: white; cursor: pointer; width: 100%;">
+                            Renvoyer l'email de vérification
+                        </button>
+                    </form>
+                {% endif %}
             {% endif %}
 
             <form method="post" action="{{ path('security.login') }}" style="display: grid; gap: 12px;">

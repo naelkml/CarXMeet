@@ -27,6 +27,7 @@ security:
             logout:
                 path: /deconnexion           # route pour déconnecter l'utilisateur
                 target: /connexion           # route ou rediriger après le logout
+            user_checker: App\Security\UserChecker
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
