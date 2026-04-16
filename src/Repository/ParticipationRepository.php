@@ -45,16 +45,14 @@ class ParticipationRepository extends ServiceEntityRepository
      */
     public function findEventsForUser(User $user): array
     {
-        $rows = $this->createQueryBuilder('p')
-            ->select('e')
+        return $this->createQueryBuilder('p')
             ->innerJoin('p.eventID', 'e')
+            ->addSelect('e')
             ->andWhere('p.userID = :u')
             ->setParameter('u', $user)
             ->orderBy('p.joinedAt', 'DESC')
             ->getQuery()
             ->getResult();
-
-        return $rows;
     }
 
     //    /**
