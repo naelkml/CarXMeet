@@ -3,23 +3,6 @@
 {% block title %}CarXMeet - {{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
 
 {% block body %}
-    <style>
-        .vehicle-hero {
-            width: 100%;
-            height: 240px;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-            background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
-        }
-        .vehicle-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-    </style>
-
     <main style="min-height: 100vh; padding: 24px;">
         <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
             <div>
@@ -50,10 +33,26 @@
             </div>
         {% endfor %}
 
-        {% set img64 = vehicle.imageBase64 %}
-        {% if img64 %}
-            <div class="vehicle-hero" style="margin-bottom: 12px;">
-                <img src="data:image/jpeg;base64,{{ img64 }}" alt="Cover {{ vehicle.brand }} {{ vehicle.model }}" loading="lazy" decoding="async">
+        {% set cover64 = vehicle.imageBase64 %}
+        {% set photos = vehicle.galleryPhotos %}
+        {% if cover64 or photos|length %}
+            <div class="cxm-mediaWall">
+                {% if cover64 %}
+                    {% set coverSrc = 'data:image/jpeg;base64,' ~ cover64 %}
+                    <a class="cxm-mediaItem cxm-cover" data-cxm-lb="1" href="{{ coverSrc }}" data-cxm-caption="Cover {{ vehicle.brand }} {{ vehicle.model }}">
+                        <img src="{{ coverSrc }}" alt="Cover {{ vehicle.brand }} {{ vehicle.model }}" loading="lazy" decoding="async">
+                    </a>
+                {% endif %}
+
+                {% for p in photos|slice(0, 4) %}
+                    {% set p64 = p.imageBase64 %}
+                    {% if p64 %}
+                        {% set pSrc = 'data:image/jpeg;base64,' ~ p64 %}
+                        <a class="cxm-mediaItem cxm-thumb" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="{{ vehicle.brand }} {{ vehicle.model }}">
+                            <img src="{{ pSrc }}" alt="Photo {{ vehicle.brand }} {{ vehicle.model }}" loading="lazy" decoding="async">
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         {% endif %}
 
@@ -64,16 +63,17 @@
                 <p style="margin: 0; color: #6b7280;">Aucune description.</p>
             {% endif %}
 
-            {% if vehicle.galleryPhotos|length %}
+            {% if photos|length > 4 %}
                 <div style="margin-top: 16px;">
-                    <h2 style="margin: 0 0 10px; font-size: 16px;">Galerie</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
-                        {% for p in vehicle.galleryPhotos %}
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Plus de photos</h2>
+                    <div class="cxm-galleryGrid">
+                        {% for p in photos|slice(4) %}
                             {% set p64 = p.imageBase64 %}
                             {% if p64 %}
-                                <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #111827;">
-                                    <img src="data:image/jpeg;base64,{{ p64 }}" alt="Photo {{ vehicle.brand }} {{ vehicle.model }}" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy" decoding="async">
-                                </div>
+                                {% set pSrc = 'data:image/jpeg;base64,' ~ p64 %}
+                                <a class="cxm-mediaItem" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="{{ vehicle.brand }} {{ vehicle.model }}">
+                                    <img src="{{ pSrc }}" alt="Photo {{ vehicle.brand }} {{ vehicle.model }}" loading="lazy" decoding="async">
+                                </a>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -82,4 +82,3 @@
         </section>
     </main>
 {% endblock %}
-

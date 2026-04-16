@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\FriendshipRepository;
+use App\Repository\ParticipationRepository;
+use App\Repository\VehicleRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
@@ -14,13 +17,53 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
 {
-    #[Route('/user', name: 'app_user')]
-    public function index(UserRepository $userRepository): Response
+    #[Route('/users', name: 'app_users')]
+    public function index(UserRepository $userRepository, FriendshipRepository $friendshipRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $me = $this->getUser();
+        $friendIds = $me instanceof User ? $friendshipRepository->getFriendIds($me) : [];
+
         $users = $userRepository->findAll();
         return $this->render('user/index.html.twig', [
             'controller_name' => 'UserController',
             'users' => $users,
+            'friendIds' => $friendIds,
+        ]);
+    }
+
+    #[Route('/users/{id}', name: 'app_users_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    public function show(
+        User $profileUser,
+        FriendshipRepository $friendshipRepository,
+        VehicleRepository $vehicleRepository,
+        ParticipationRepository $participationRepository
+    ): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $me = $this->getUser();
+        if (!$me instanceof User) {
+            return $this->redirectToRoute('security.login');
+        }
+
+        $isMe = $me->getId() === $profileUser->getId();
+        $isFriend = $friendshipRepository->areFriends($me, $profileUser);
+
+        $vehicles = [];
+        $events = [];
+        if ($isMe || $isFriend) {
+            $vehicles = $vehicleRepository->findBy(['userID' => $profileUser], ['id' => 'DESC']);
+            $events = $participationRepository->findEventsForUser($profileUser);
+        }
+
+        return $this->render('user/show.html.twig', [
+            'profileUser' => $profileUser,
+            'isMe' => $isMe,
+            'isFriend' => $isFriend,
+            'vehicles' => $vehicles,
+            'events' => $events,
         ]);
     }
 
@@ -42,6 +85,11 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $profilePhoto = $form->get('profilePhoto')->getData();
+            if ($profilePhoto) {
+                $user->setProfilePhoto(file_get_contents($profilePhoto->getPathname()));
+            }
+
             $newUsername = (string) $user->getUsername();
             $newEmail = (string) $user->getEmail();
 

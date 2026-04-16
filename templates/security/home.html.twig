@@ -6,19 +6,39 @@
 
 {% block body %}
     <div class ="container">
-        <h1 class ="mt-4">Acceuil</h1>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                {% set u = app.user %}
+                <div class="cxm-avatar" style="width: 54px; height: 54px;">
+                    {% if u and u.profileImageBase64 %}
+                        <img src="data:image/jpeg;base64,{{ u.profileImageBase64 }}" alt="Photo de profil" loading="lazy" decoding="async">
+                    {% endif %}
+                </div>
+                <div>
+                    <h1 style="margin: 0; font-size: 22px;">Acceuil</h1>
+                    {% if u %}
+                        <div style="margin-top: 4px; font-size: 13px; color: #6b7280;">
+                            Connecté en tant que <strong style="color: #111827;">{{ u.username }}</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
-        <div style="margin-top: 12px;">
-            <a href="{{ path('app_user_edit') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
-                Modifier mon profil
-            </a>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                <a href="{{ path('app_user_edit') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                    Modifier mon profil
+                </a>
+                <a href="{{ path('app_users') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; color: #111827; text-decoration: none;">
+                    Utilisateurs
+                </a>
+                <a href="{{ path('app_friendship_list') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; color: #111827; text-decoration: none;">
+                    Amis
+                </a>
+                <a href="{{ path('security.logout') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                    Se déconnecter
+                </a>
+            </div>
         </div>
-        <div style="margin-top: 12px;">
-            <a href="{{ path('security.logout') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
-                Se déconnecter
-            </a>
-        </div>
-
 
         <section style="margin-top: 18px;">
             <h2 style="margin: 0 0 10px; font-size: 18px;">Régions</h2>

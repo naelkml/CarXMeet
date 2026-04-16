@@ -2,15 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\Participation;
 use App\Entity\EventPhoto;
 use App\Entity\EventRating;
 use App\Entity\Events;
 use App\Entity\Region;
 use App\Entity\User;
 use App\Form\EventsType;
+use App\Repository\ConvoyParticipationRepository;
 use App\Repository\EventRatingRepository;
 use App\Repository\EventsRepository;
+use App\Repository\FriendshipRepository;
 use App\Repository\RegionRepository;
+use App\Repository\ParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,20 +46,141 @@ final class EventsController extends AbstractController
     }
 
     #[Route('/events/{id}', name: 'app_events_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function show(Events $event, EventRatingRepository $eventRatingRepository): Response
+    public function show(
+        Events $event,
+        EventRatingRepository $eventRatingRepository,
+        ParticipationRepository $participationRepository,
+        FriendshipRepository $friendshipRepository,
+        ConvoyParticipationRepository $convoyParticipationRepository,
+    ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $myRating = null;
         $user = $this->getUser();
-        if ($user instanceof User) {
-            $myRating = $eventRatingRepository->findOneForUser($event, $user);
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('security.login');
+        }
+
+        $myRating = $eventRatingRepository->findOneForUser($event, $user);
+
+        $isParticipating = $participationRepository->findOneForUser($event, $user) !== null;
+
+        $participantViews = [];
+        foreach ($participationRepository->findParticipantsForEvent($event) as $participation) {
+            $participantUser = $participation->getUserID();
+            if (!$participantUser instanceof User) {
+                continue;
+            }
+
+            $participantViews[] = [
+                'user' => $participantUser,
+                'isMe' => $participantUser->getId() === $user->getId(),
+                'isFriend' => $friendshipRepository->areFriends($user, $participantUser),
+            ];
+        }
+
+        $convoyViews = [];
+        foreach ($event->getConvoys() as $convoy) {
+            $isMember = $convoyParticipationRepository->findOneForUser($convoy, $user) !== null;
+
+            $memberViews = [];
+            foreach ($convoyParticipationRepository->findMembersForConvoy($convoy) as $membership) {
+                $memberUser = $membership->getUserID();
+                if (!$memberUser instanceof User) {
+                    continue;
+                }
+
+                $memberViews[] = [
+                    'user' => $memberUser,
+                    'isMe' => $memberUser->getId() === $user->getId(),
+                    'isFriend' => $friendshipRepository->areFriends($user, $memberUser),
+                ];
+            }
+
+            $convoyViews[] = [
+                'convoy' => $convoy,
+                'isMember' => $isMember,
+                'members' => $memberViews,
+            ];
         }
 
         return $this->render('events/show.html.twig', [
             'event' => $event,
             'myRating' => $myRating,
+            'isParticipating' => $isParticipating,
+            'participants' => $participantViews,
+            'convoys' => $convoyViews,
         ]);
+    }
+
+    #[Route('/events/{id}/participate', name: 'app_events_participate', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function participate(
+        Request $request,
+        Events $event,
+        ParticipationRepository $participationRepository,
+        EntityManagerInterface $em,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('security.login');
+        }
+
+        if (!$this->isCsrfTokenValid('participate_event_' . $event->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
+        }
+
+        $existing = $participationRepository->findOneForUser($event, $user);
+        if ($existing) {
+            $this->addFlash('info', 'Tu participes déjà à cet événement.');
+            return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
+        }
+
+        $participation = new Participation();
+        $participation->setEventID($event);
+        $participation->setUserID($user);
+        $participation->setJoinedAt(new \DateTimeImmutable());
+
+        $em->persist($participation);
+        $em->flush();
+
+        $this->addFlash('success', 'Participation enregistrée.');
+        return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
+    }
+
+    #[Route('/events/{id}/leave', name: 'app_events_leave', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function leave(
+        Request $request,
+        Events $event,
+        ParticipationRepository $participationRepository,
+        EntityManagerInterface $em,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('security.login');
+        }
+
+        if (!$this->isCsrfTokenValid('leave_event_' . $event->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
+        }
+
+        $existing = $participationRepository->findOneForUser($event, $user);
+        if (!$existing) {
+            $this->addFlash('info', "Tu ne participes pas à cet événement.");
+            return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
+        }
+
+        $em->remove($existing);
+        $em->flush();
+
+        $this->addFlash('success', "Tu as quitté cet événement.");
+        return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
     }
 
     #[Route('/events/new', name: 'app_events_new', methods: ['GET', 'POST'])]

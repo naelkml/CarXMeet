@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ConvoyRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConvoyRepository::class)]
@@ -23,8 +25,22 @@ class Convoy
     #[ORM\Column(length: 255)]
     private ?string $departureTime = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $departureDate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $participants = null;
+
+    /**
+     * @var Collection<int, ConvoyParticipation>
+     */
+    #[ORM\OneToMany(targetEntity: ConvoyParticipation::class, mappedBy: 'convoyID', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $memberships;
+
+    public function __construct()
+    {
+        $this->memberships = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -67,14 +83,52 @@ class Convoy
         return $this;
     }
 
+    public function getDepartureDate(): ?string
+    {
+        return $this->departureDate;
+    }
+
+    public function setDepartureDate(?string $departureDate): static
+    {
+        $this->departureDate = $departureDate;
+        return $this;
+    }
+
     public function getParticipants(): ?string
     {
         return $this->participants;
     }
 
-    public function setParticipants(string $participants): static
+    public function setParticipants(?string $participants): static
     {
         $this->participants = $participants;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConvoyParticipation>
+     */
+    public function getMemberships(): Collection
+    {
+        return $this->memberships;
+    }
+
+    public function addMembership(ConvoyParticipation $membership): static
+    {
+        if (!$this->memberships->contains($membership)) {
+            $this->memberships->add($membership);
+            $membership->setConvoyID($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMembership(ConvoyParticipation $membership): static
+    {
+        if ($this->memberships->removeElement($membership)) {
+            // orphanRemoval handles the delete; avoid setting FK to null (JoinColumn is non-nullable).
+        }
 
         return $this;
     }

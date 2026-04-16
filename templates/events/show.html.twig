@@ -5,23 +5,6 @@
 {% endblock %}
 
 {% block body %}
-    <style>
-        .event-hero {
-            width: 100%;
-            height: 240px;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-            background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
-        }
-        .event-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-    </style>
-
     <main style="min-height: 100vh; padding: 24px;">
         <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
             <div>
@@ -64,15 +47,88 @@
             </div>
         {% endfor %}
 
-        {% set img64 = event.imageBase64 %}
-        {% if img64 %}
-            <div class="event-hero" style="margin-bottom: 12px;">
-                <img src="data:image/jpeg;base64,{{ img64 }}" alt="Cover {{ event.title }}" loading="lazy" decoding="async">
+        {% set cover64 = event.imageBase64 %}
+        {% set photos = event.galleryPhotos %}
+        {% if cover64 or photos|length %}
+            <div class="cxm-mediaWall">
+                {% if cover64 %}
+                    {% set coverSrc = 'data:image/jpeg;base64,' ~ cover64 %}
+                    <a class="cxm-mediaItem cxm-cover" data-cxm-lb="1" href="{{ coverSrc }}" data-cxm-caption="Cover {{ event.title }}">
+                        <img src="{{ coverSrc }}" alt="Cover {{ event.title }}" loading="lazy" decoding="async">
+                    </a>
+                {% endif %}
+
+                {% for p in photos|slice(0, 4) %}
+                    {% set p64 = p.imageBase64 %}
+                    {% if p64 %}
+                        {% set pSrc = 'data:image/jpeg;base64,' ~ p64 %}
+                        <a class="cxm-mediaItem cxm-thumb" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="{{ event.title }}">
+                            <img src="{{ pSrc }}" alt="Photo {{ event.title }}" loading="lazy" decoding="async">
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         {% endif %}
 
         <section style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
             <p style="margin: 0; color: #374151; white-space: pre-wrap;">{{ event.description }}</p>
+
+            <section style="margin-top: 16px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+                    <h2 style="margin: 0; font-size: 16px;">Participants</h2>
+
+                    <div>
+                        {% if isParticipating %}
+                            <form method="post" action="{{ path('app_events_leave', { id: event.id }) }}" onsubmit="return confirm('Quitter cet événement ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('leave_event_' ~ event.id) }}">
+                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                    Quitter
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ path('app_events_participate', { id: event.id }) }}" onsubmit="return confirm('Participer à cet événement ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participate_event_' ~ event.id) }}">
+                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                                    Participer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="display: grid; gap: 10px;">
+                    {% for p in participants %}
+                        {% set actions = '' %}
+                        {% if not p.isMe %}
+                            {% if p.isFriend %}
+                                {% set actions %}
+                                    <form method="post" action="{{ path('app_friendship_remove', { id: p.user.id }) }}" onsubmit="return confirm('Supprimer cet ami ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('friend_remove_' ~ p.user.id) }}">
+                                        <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer; font-size: 14px;">
+                                            Retirer
+                                        </button>
+                                    </form>
+                                {% endset %}
+                            {% else %}
+                                {% set actions %}
+                                    <form method="post" action="{{ path('app_friendship_add', { id: p.user.id }) }}" onsubmit="return confirm('Ajouter cet utilisateur en ami ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('friend_add_' ~ p.user.id) }}">
+                                        <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer; font-size: 14px;">
+                                            Ajouter en ami
+                                        </button>
+                                    </form>
+                                {% endset %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% include '_user_badge.html.twig' with { u: p.user, actions: actions } only %}
+                    {% else %}
+                        <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                            Personne ne participe pour l'instant.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
 
             <form method="post" action="{{ path('app_events_rate', { id: event.id }) }}" style="margin-top: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <input type="hidden" name="_token" value="{{ csrf_token('rate_event_' ~ event.id) }}">
@@ -87,16 +143,105 @@
                 </button>
             </form>
 
-            {% if event.galleryPhotos|length %}
+            <section style="margin-top: 16px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+                    <h2 style="margin: 0; font-size: 16px;">Convois</h2>
+                    <a href="{{ path('app_convoy_new', { id: event.id }) }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                        Créer un convoi
+                    </a>
+                </div>
+
+                {% if convoys|length %}
+                    <div style="display: grid; gap: 12px;">
+                        {% for c in convoys %}
+                            <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;">
+                                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                                    <div>
+                                        <div style="font-weight: 700; color: #111827;">Départ: {{ c.convoy.departureLocation }}</div>
+                                        <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                                            {% if c.convoy.departureDate %}
+                                                {{ c.convoy.departureDate }} ·
+                                            {% endif %}
+                                            {{ c.convoy.departureTime }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        {% if c.isMember %}
+                                            <form method="post" action="{{ path('app_convoy_leave', { id: c.convoy.id }) }}" onsubmit="return confirm('Quitter ce convoi ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('leave_convoy_' ~ c.convoy.id) }}">
+                                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer; font-size: 14px;">
+                                                    Quitter
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form method="post" action="{{ path('app_convoy_join', { id: c.convoy.id }) }}" onsubmit="return confirm('Rejoindre ce convoi ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('join_convoy_' ~ c.convoy.id) }}">
+                                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer; font-size: 14px;">
+                                                    Rejoindre
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 14px;">
+                                    <h3 style="margin: 0 0 10px; font-size: 14px; color: #111827;">Participants</h3>
+
+                                    <div style="display: grid; gap: 10px;">
+                                        {% for m in c.members %}
+                                            {% set actions = '' %}
+                                            {% if not m.isMe %}
+                                                {% if m.isFriend %}
+                                                    {% set actions %}
+                                                        <form method="post" action="{{ path('app_friendship_remove', { id: m.user.id }) }}" onsubmit="return confirm('Supprimer cet ami ?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('friend_remove_' ~ m.user.id) }}">
+                                                            <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer; font-size: 14px;">
+                                                                Retirer
+                                                            </button>
+                                                        </form>
+                                                    {% endset %}
+                                                {% else %}
+                                                    {% set actions %}
+                                                        <form method="post" action="{{ path('app_friendship_add', { id: m.user.id }) }}" onsubmit="return confirm('Ajouter cet utilisateur en ami ?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('friend_add_' ~ m.user.id) }}">
+                                                            <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer; font-size: 14px;">
+                                                                Ajouter en ami
+                                                            </button>
+                                                        </form>
+                                                    {% endset %}
+                                                {% endif %}
+                                            {% endif %}
+
+                                            {% include '_user_badge.html.twig' with { u: m.user, actions: actions } only %}
+                                        {% else %}
+                                            <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                                                Aucun participant pour l'instant.
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                        Aucun convoi pour le moment.
+                    </div>
+                {% endif %}
+            </section>
+
+            {% if photos|length > 4 %}
                 <div style="margin-top: 16px;">
-                    <h2 style="margin: 0 0 10px; font-size: 16px;">Galerie</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
-                        {% for p in event.galleryPhotos %}
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Plus de photos</h2>
+                    <div class="cxm-galleryGrid">
+                        {% for p in photos|slice(4) %}
                             {% set p64 = p.imageBase64 %}
                             {% if p64 %}
-                                <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #111827;">
-                                    <img src="data:image/jpeg;base64,{{ p64 }}" alt="Photo {{ event.title }}" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy" decoding="async">
-                                </div>
+                                {% set pSrc = 'data:image/jpeg;base64,' ~ p64 %}
+                                <a class="cxm-mediaItem" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="{{ event.title }}">
+                                    <img src="{{ pSrc }}" alt="Photo {{ event.title }}" loading="lazy" decoding="async">
+                                </a>
                             {% endif %}
                         {% endfor %}
                     </div>

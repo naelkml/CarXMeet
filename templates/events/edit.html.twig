@@ -27,27 +27,35 @@
 
             {% set img64 = event.imageBase64 %}
             {% if img64 %}
-                <div style="width: 100%; height: 200px; border-radius: 14px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 12px; background: #111827;">
-                    <img src="data:image/jpeg;base64,{{ img64 }}" alt="Cover {{ event.title }}" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" decoding="async">
-                </div>
+                {% set coverSrc = 'data:image/jpeg;base64,' ~ img64 %}
+                <a class="cxm-mediaItem cxm-cover" data-cxm-lb="1" href="{{ coverSrc }}" data-cxm-caption="Cover {{ event.title }}" style="margin-bottom: 12px;">
+                    <img src="{{ coverSrc }}" alt="Cover {{ event.title }}" loading="lazy" decoding="async">
+                </a>
             {% endif %}
 
             {% if event.galleryPhotos|length %}
                 <div style="margin: 0 0 14px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px;">
                     <h2 style="margin: 0 0 10px; font-size: 16px;">Galerie ({{ event.galleryPhotos|length }}/8)</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                    <div class="cxm-galleryGrid">
                         {% for p in event.galleryPhotos %}
                             {% set p64 = p.imageBase64 %}
-                            <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #111827;">
-                                {% if p64 %}
-                                    <img src="data:image/jpeg;base64,{{ p64 }}" alt="Photo {{ event.title }}" style="width: 100%; height: 110px; object-fit: cover; display: block;" loading="lazy" decoding="async">
-                                {% endif %}
-                                <form method="post" action="{{ path('app_events_photo_delete', { id: event.id, photo: p.id }) }}" onsubmit="return confirm('Supprimer cette photo ?');" style="padding: 8px; background: white;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_photo_' ~ p.id) }}">
-                                    <button type="submit" style="width: 100%; padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
-                                        Supprimer
-                                    </button>
-                                </form>
+                            <div class="cxm-tile">
+                                <div class="cxm-tileMedia">
+                                    {% if p64 %}
+                                        {% set pSrc = 'data:image/jpeg;base64,' ~ p64 %}
+                                        <a class="cxm-mediaItem" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="{{ event.title }}">
+                                            <img src="{{ pSrc }}" alt="Photo {{ event.title }}" loading="lazy" decoding="async">
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="cxm-tileActions">
+                                    <form method="post" action="{{ path('app_events_photo_delete', { id: event.id, photo: p.id }) }}" onsubmit="return confirm('Supprimer cette photo ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_event_photo_' ~ p.id) }}">
+                                        <button type="submit" style="width: 100%; padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>

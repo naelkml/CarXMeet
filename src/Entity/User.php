@@ -105,9 +105,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $confirmationToken = null;
 
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $profilePhoto = null;
 
     public function __construct()
     {
+        $this->crewID = new ArrayCollection();
+        $this->friendships = new ArrayCollection();
+        $this->friendships_receiver = new ArrayCollection();
         $this->vehicles = new ArrayCollection();
         $this->postphotos = new ArrayCollection();
         $this->participations = new ArrayCollection();
@@ -497,5 +502,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getProfilePhoto()
+    {
+        return $this->profilePhoto;
+    }
+
+    public function setProfilePhoto($profilePhoto): static
+    {
+        $this->profilePhoto = $profilePhoto;
+        return $this;
+    }
+
+    public function getProfileImageBase64(): ?string
+    {
+        if (!$this->profilePhoto) {
+            return null;
+        }
+
+        if (is_resource($this->profilePhoto)) {
+            $meta = stream_get_meta_data($this->profilePhoto);
+            if (!empty($meta['seekable'])) {
+                rewind($this->profilePhoto);
+            }
+            $data = stream_get_contents($this->profilePhoto);
+        } else {
+            $data = $this->profilePhoto;
+        }
+
+        return base64_encode($data);
+    }
 
 }

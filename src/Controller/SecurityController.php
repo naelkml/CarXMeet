@@ -65,6 +65,11 @@ final class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $profilePhoto = $form->get('profilePhoto')->getData();
+            if ($profilePhoto) {
+                $user->setProfilePhoto(file_get_contents($profilePhoto->getPathname()));
+            }
+
             $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
             $user->setCreatedAt(new \DateTimeImmutable());
             $user->setIsVerified(false);

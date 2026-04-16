@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Events;
 use App\Entity\Participation;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +16,45 @@ class ParticipationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Participation::class);
+    }
+
+    public function findOneForUser(Events $event, User $user): ?Participation
+    {
+        return $this->findOneBy([
+            'eventID' => $event,
+            'userID' => $user,
+        ]);
+    }
+
+    /**
+     * @return Participation[]
+     */
+    public function findParticipantsForEvent(Events $event): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.userID', 'u')->addSelect('u')
+            ->andWhere('p.eventID = :e')
+            ->setParameter('e', $event)
+            ->orderBy('p.joinedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Events[]
+     */
+    public function findEventsForUser(User $user): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('e')
+            ->innerJoin('p.eventID', 'e')
+            ->andWhere('p.userID = :u')
+            ->setParameter('u', $user)
+            ->orderBy('p.joinedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
     }
 
     //    /**

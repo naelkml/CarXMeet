@@ -5,6 +5,235 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+            <style>
+                :root {
+                    --cxm-radius: 16px;
+                    --cxm-radius-sm: 12px;
+                    --cxm-border: #e5e7eb;
+                    --cxm-ink: #111827;
+                    --cxm-muted: #6b7280;
+                    --cxm-bg-dark: #0b1220;
+                }
+
+                .cxm-mediaWall {
+                    display: grid;
+                    grid-template-columns: repeat(12, 1fr);
+                    gap: 10px;
+                    margin-bottom: 12px;
+                }
+
+                .cxm-mediaItem {
+                    border: 1px solid var(--cxm-border);
+                    border-radius: var(--cxm-radius);
+                    overflow: hidden;
+                    background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
+                    display: block;
+                    text-decoration: none;
+                    color: inherit;
+                    position: relative;
+                }
+
+                .cxm-mediaItem img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                    transition: transform 160ms ease;
+                }
+
+                .cxm-mediaItem:hover img {
+                    transform: scale(1.02);
+                }
+
+                .cxm-cover {
+                    grid-column: span 12;
+                    height: clamp(220px, 28vw, 380px);
+                }
+
+                .cxm-thumb {
+                    grid-column: span 6;
+                    height: 140px;
+                    border-radius: var(--cxm-radius-sm);
+                }
+
+                @media (min-width: 860px) {
+                    .cxm-cover {
+                        grid-column: span 8;
+                        grid-row: span 2;
+                        height: 360px;
+                    }
+
+                    .cxm-thumb {
+                        grid-column: span 4;
+                        height: 175px;
+                    }
+                }
+
+                .cxm-galleryGrid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                    gap: 10px;
+                }
+
+                .cxm-galleryGrid .cxm-mediaItem {
+                    border-radius: var(--cxm-radius-sm);
+                    aspect-ratio: 4 / 3;
+                }
+
+                .cxm-galleryGrid .cxm-mediaItem img {
+                    height: 100%;
+                }
+
+                .cxm-tile {
+                    border: 1px solid var(--cxm-border);
+                    border-radius: var(--cxm-radius-sm);
+                    overflow: hidden;
+                    background: white;
+                }
+
+                .cxm-tileMedia {
+                    background: var(--cxm-bg-dark);
+                }
+
+                .cxm-tileMedia .cxm-mediaItem {
+                    border: 0;
+                    border-radius: 0;
+                    background: var(--cxm-bg-dark);
+                }
+
+                .cxm-tileActions {
+                    padding: 8px;
+                    background: white;
+                }
+
+                .cxm-avatar {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 999px;
+                    border: 1px solid var(--cxm-border);
+                    overflow: hidden;
+                    background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
+                    flex: 0 0 auto;
+                }
+
+                .cxm-avatar img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
+
+                .cxm-userRow {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                    padding: 10px 12px;
+                    border: 1px solid var(--cxm-border);
+                    border-radius: 14px;
+                    background: white;
+                }
+
+                .cxm-userMeta {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    min-width: 0;
+                }
+
+                .cxm-userName {
+                    font-weight: 700;
+                    color: var(--cxm-ink);
+                    text-decoration: none;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .cxm-userSub {
+                    font-size: 12px;
+                    color: var(--cxm-muted);
+                    margin-top: 2px;
+                }
+
+                /* Lightbox */
+                .cxm-lb {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 9999;
+                    display: grid;
+                    place-items: center;
+                }
+
+                .cxm-lb[hidden] {
+                    display: none;
+                }
+
+                .cxm-lbBackdrop {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.75);
+                }
+
+                .cxm-lbPane {
+                    position: relative;
+                    width: min(1040px, calc(100vw - 28px));
+                    max-height: calc(100vh - 28px);
+                    border-radius: 18px;
+                    overflow: hidden;
+                    background: #0b1220;
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+                }
+
+                .cxm-lbTop {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                    padding: 10px 12px;
+                    background: rgba(17, 24, 39, 0.92);
+                    color: white;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+                }
+
+                .cxm-lbCaption {
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.82);
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                .cxm-lbClose {
+                    padding: 8px 10px;
+                    border: 0;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.12);
+                    color: white;
+                    cursor: pointer;
+                }
+
+                .cxm-lbBody {
+                    display: grid;
+                    place-items: center;
+                    background: #000;
+                }
+
+                .cxm-lbBody img {
+                    max-width: 100%;
+                    max-height: calc(100vh - 90px);
+                    width: auto;
+                    height: auto;
+                    display: block;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .cxm-mediaItem img {
+                        transition: none;
+                    }
+                }
+            </style>
         {% endblock %}
 
         {% block javascripts %}
@@ -13,5 +242,84 @@
     </head>
     <body>
         {% block body %}{% endblock %}
+
+        <div id="cxm-lightbox" class="cxm-lb" hidden aria-hidden="true">
+            <div class="cxm-lbBackdrop" data-cxm-lb-close="1"></div>
+            <div class="cxm-lbPane" role="dialog" aria-modal="true" aria-label="Image">
+                <div class="cxm-lbTop">
+                    <div id="cxm-lbCaption" class="cxm-lbCaption"></div>
+                    <button type="button" class="cxm-lbClose" data-cxm-lb-close="1">Fermer</button>
+                </div>
+                <div class="cxm-lbBody">
+                    <img id="cxm-lbImg" alt="">
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                var lb = document.getElementById('cxm-lightbox');
+                var lbImg = document.getElementById('cxm-lbImg');
+                var lbCaption = document.getElementById('cxm-lbCaption');
+                if (!lb || !lbImg || !lbCaption) return;
+
+                var lastFocus = null;
+
+                function openLightbox(src, caption) {
+                    lastFocus = document.activeElement;
+                    lbImg.src = src || '';
+                    lbImg.alt = caption || 'Image';
+                    lbCaption.textContent = caption || '';
+                    lb.hidden = false;
+                    lb.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+
+                    var closeBtn = lb.querySelector('[data-cxm-lb-close="1"]');
+                    if (closeBtn) closeBtn.focus();
+                }
+
+                function closeLightbox() {
+                    lb.hidden = true;
+                    lb.setAttribute('aria-hidden', 'true');
+                    lbImg.src = '';
+                    document.body.style.overflow = '';
+                    if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+                }
+
+                document.addEventListener('click', function (e) {
+                    var t = e.target;
+                    if (!t) return;
+
+                    var closeEl = t.closest && t.closest('[data-cxm-lb-close="1"]');
+                    if (closeEl) {
+                        e.preventDefault();
+                        closeLightbox();
+                        return;
+                    }
+
+                    var a = t.closest && t.closest('a[data-cxm-lb="1"]');
+                    if (!a) return;
+
+                    var src = a.getAttribute('href') || '';
+                    if (!src) return;
+
+                    e.preventDefault();
+                    var caption = a.getAttribute('data-cxm-caption') || '';
+                    if (!caption) {
+                        var img = a.querySelector('img');
+                        caption = img ? (img.getAttribute('alt') || '') : '';
+                    }
+                    openLightbox(src, caption);
+                });
+
+                document.addEventListener('keydown', function (e) {
+                    if (lb.hidden) return;
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeLightbox();
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>

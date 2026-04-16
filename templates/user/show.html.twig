@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CarXMeet - {{ profileUser.username }}{% endblock %}
+
+{% block body %}
+    <main style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+        <section style="width: 100%; max-width: 720px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+            <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <h1 style="margin: 0; font-size: 22px;">Profil</h1>
+                    <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                        {{ profileUser.firstName }} {{ profileUser.lastName }}
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a href="{{ path('app_users') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                        Retour
+                    </a>
+                    {% if isMe %}
+                        <a href="{{ path('app_user_edit') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                            Modifier mon profil
+                        </a>
+                    {% endif %}
+                </div>
+            </header>
+
+            {% if profileUser.profileImageBase64 %}
+                {% set pSrc = 'data:image/jpeg;base64,' ~ profileUser.profileImageBase64 %}
+                <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                    <a class="cxm-mediaItem" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="Photo de profil" style="width: 120px; height: 120px; border-radius: 999px; display: block; border: 1px solid #e5e7eb; overflow: hidden;">
+                        <img src="{{ pSrc }}" alt="Photo de profil" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if not isMe %}
+                <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                    {% if isFriend %}
+                        <form method="post" action="{{ path('app_friendship_remove', { id: profileUser.id }) }}" onsubmit="return confirm('Supprimer cet ami ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_remove_' ~ profileUser.id) }}">
+                            <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                Supprimer ami
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{{ path('app_friendship_add', { id: profileUser.id }) }}" onsubmit="return confirm('Ajouter cet utilisateur en ami ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_add_' ~ profileUser.id) }}">
+                            <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                                Ajouter en ami
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div style="display: grid; gap: 14px;">
+                <section style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;">
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Véhicules</h2>
+
+                    {% if isMe or isFriend %}
+                        {% if vehicles|length %}
+                            <div style="display: grid; gap: 10px;">
+                                {% for v in vehicles %}
+                                    {% set img64 = v.imageBase64 %}
+                                    <a href="{{ path('app_garage_vehicle_show', { id: v.id }) }}" style="text-decoration: none; color: inherit;">
+                                        <div style="display: flex; align-items: center; gap: 12px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px;">
+                                            <div style="width: 72px; height: 54px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%); border: 1px solid #e5e7eb;">
+                                                {% if img64 %}
+                                                    <img src="data:image/jpeg;base64,{{ img64 }}" alt="Photo {{ v.brand }} {{ v.model }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                                {% else %}
+                                                    <div style="width: 100%; height: 100%; display: grid; place-items: center; color: #e5e7eb; font-size: 12px;">
+                                                        Pas de photo
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div style="min-width: 0;">
+                                                <div style="font-weight: 700; color: #111827;">
+                                                    {{ v.brand }} {{ v.model }} ({{ v.year }})
+                                                </div>
+                                                <div style="margin-top: 4px; font-size: 13px; color: #6b7280;">
+                                                    {{ v.engine }} · {{ v.preparation }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                                Aucun véhicule pour le moment.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                            Tu peux voir les véhicules uniquement si vous êtes amis.
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;">
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Événements</h2>
+
+                    {% if isMe or isFriend %}
+                        {% if events|length %}
+                            <div style="display: grid; gap: 10px;">
+                                {% for event in events %}
+                                    <a href="{{ path('app_events_show', { id: event.id }) }}" style="text-decoration: none; color: inherit;">
+                                        <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px;">
+                                            <div style="font-weight: 700; color: #111827;">{{ event.title }}</div>
+                                            <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                                                {{ event.date }} · {{ event.location }} · {{ event.type }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                                Aucun événement pour le moment.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                            Tu peux voir les événements uniquement si vous êtes amis.
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+

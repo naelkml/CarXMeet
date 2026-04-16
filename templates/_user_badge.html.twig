@@ -1,0 +1,27 @@
+{# Usage:
+   {% include '_user_badge.html.twig' with { u: someUser, actions: '<form>...</form>' } only %}
+   "actions" is optional raw HTML.
+#}
+{% set img64 = u.profileImageBase64 %}
+<div class="cxm-userRow">
+    <div class="cxm-userMeta">
+        <div class="cxm-avatar">
+            {% if img64 %}
+                <img src="data:image/jpeg;base64,{{ img64 }}" alt="Photo {{ u.username|default('') }}" loading="lazy" decoding="async">
+            {% endif %}
+        </div>
+        <div style="min-width: 0;">
+            <a class="cxm-userName" href="{{ path('app_users_show', { id: u.id }) }}">{{ u.username }}</a>
+            <div class="cxm-userSub">
+                {{ u.firstName }} {{ u.lastName }}
+            </div>
+        </div>
+    </div>
+
+    {% if actions is defined and actions %}
+        <div style="display: flex; gap: 8px; align-items: center;">
+            {{ actions|raw }}
+        </div>
+    {% endif %}
+</div>
+

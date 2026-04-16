@@ -1,21 +1,47 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello UserController!{% endblock %}
+{% block title %}CarXMeet - Utilisateurs{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <main style="min-height: 100vh; padding: 24px;">
+        <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+            <h1 style="margin: 0; font-size: 22px;">Utilisateurs</h1>
+            <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                Retour accueil
+            </a>
+        </header>
 
-    <div class="example-wrapper">
-        <h1>Hello {{ controller_name }}! ✅</h1>
+        <section style="max-width: 840px; display: grid; gap: 10px;">
+            {% for u in users %}
+                {% set actions = '' %}
+                {% if app.user and u.id != app.user.id %}
+                    {% if u.id in friendIds %}
+                        {% set actions %}
+                            <form method="post" action="{{ path('app_friendship_remove', { id: u.id }) }}" onsubmit="return confirm('Supprimer cet ami ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('friend_remove_' ~ u.id) }}">
+                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer; font-size: 14px;">
+                                    Supprimer
+                                </button>
+                            </form>
+                        {% endset %}
+                    {% else %}
+                        {% set actions %}
+                            <form method="post" action="{{ path('app_friendship_add', { id: u.id }) }}" onsubmit="return confirm('Ajouter cet utilisateur en ami ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('friend_add_' ~ u.id) }}">
+                                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer; font-size: 14px;">
+                                    Ajouter en ami
+                                </button>
+                            </form>
+                        {% endset %}
+                    {% endif %}
+                {% endif %}
 
-        Voici la liste des username :
-        <ul>
-            {% for user in users %}
-                <li>{{ user.username }}</li>
+                {% include '_user_badge.html.twig' with { u: u, actions: actions } only %}
+            {% else %}
+                <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                    Aucun utilisateur.
+                </div>
             {% endfor %}
-        </ul>
-    </div>
+        </section>
+    </main>
 {% endblock %}

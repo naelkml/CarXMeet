@@ -1,20 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello FriendshipController!{% endblock %}
+{% block title %}CarXMeet - Mes amis{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <main style="min-height: 100vh; padding: 24px;">
+        <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+            <h1 style="margin: 0; font-size: 22px;">Mes amis</h1>
+            <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                Retour accueil
+            </a>
+        </header>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+        {% for message in app.flashes('success') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/Users/naelkhamallah/CarXMeet/src/Controller/FriendshipController.php</code></li>
-        <li>Your template at <code>/Users/naelkhamallah/CarXMeet/templates/friendship/index.html.twig</code></li>
-    </ul>
-</div>
+        <section style="max-width: 840px; display: grid; gap: 10px;">
+            {% for f in friends %}
+                {% set actions %}
+                    <form method="post" action="{{ path('app_friendship_remove', { id: f.id }) }}" onsubmit="return confirm('Supprimer cet ami ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('friend_remove_' ~ f.id) }}">
+                        <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                            Supprimer
+                        </button>
+                    </form>
+                {% endset %}
+
+                {% include '_user_badge.html.twig' with { u: f, actions: actions } only %}
+            {% else %}
+                <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
+                    Aucun ami pour le moment.
+                </div>
+            {% endfor %}
+        </section>
+    </main>
 {% endblock %}
+

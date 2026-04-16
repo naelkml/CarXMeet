@@ -28,6 +28,16 @@
                 </div>
             {% endfor %}
 
+            {% set u = app.user %}
+            {% if u and u.profileImageBase64 %}
+                {% set pSrc = 'data:image/jpeg;base64,' ~ u.profileImageBase64 %}
+                <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                    <a class="cxm-mediaItem" data-cxm-lb="1" href="{{ pSrc }}" data-cxm-caption="Photo de profil" style="width: 120px; height: 120px; border-radius: 999px;">
+                        <img src="{{ pSrc }}" alt="Photo de profil" loading="lazy" decoding="async">
+                    </a>
+                </div>
+            {% endif %}
+
             {{ form_start(form, { attr: { style: 'display: grid; gap: 12px;' } }) }}
                 <div style="display: grid; gap: 6px;">
                     {{ form_label(form.firstName, null, { label_attr: { style: 'font-size: 14px;' } }) }}
@@ -81,6 +91,12 @@
                     {{ form_label(form.tiktok, null, { label_attr: { style: 'font-size: 14px;' } }) }}
                     {{ form_widget(form.tiktok, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
                     {{ form_errors(form.tiktok) }}
+                </div>
+
+                <div style="display: grid; gap: 6px;">
+                    {{ form_label(form.profilePhoto, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+                    {{ form_widget(form.profilePhoto, { attr: { accept: 'image/*', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+                    {{ form_errors(form.profilePhoto) }}
                 </div>
 
                 <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
