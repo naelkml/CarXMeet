@@ -51,7 +51,27 @@
                 {% endif %}
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                <form method="get" style="display: flex; align-items: center; gap: 8px;">
+                    {% if region %}
+                        <input type="hidden" name="region" value="{{ region.id }}">
+                    {% endif %}
+                    <label for="sort" style="font-size: 14px; color: #374151;">Trier:</label>
+                    <select id="sort" name="sort" style="padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 10px; background: white;">
+                        <option value="date_asc" {{ sort == 'date_asc' ? 'selected' : '' }}>Date (croissante)</option>
+                        <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (décroissante)</option>
+                        <option value="type_asc" {{ sort == 'type_asc' ? 'selected' : '' }}>Type (A → Z)</option>
+                        <option value="type_desc" {{ sort == 'type_desc' ? 'selected' : '' }}>Type (Z → A)</option>
+                        <option value="rating_desc" {{ sort == 'rating_desc' ? 'selected' : '' }}>Notation (meilleure)</option>
+                        <option value="rating_asc" {{ sort == 'rating_asc' ? 'selected' : '' }}>Notation (moins bonne)</option>
+                        <option value="created_desc" {{ sort == 'created_desc' ? 'selected' : '' }}>Ancienneté (nouveaux)</option>
+                        <option value="created_asc" {{ sort == 'created_asc' ? 'selected' : '' }}>Ancienneté (anciens)</option>
+                    </select>
+                    <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                        OK
+                    </button>
+                </form>
+
                 <a href="{{ path('app_home') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
                     Retour accueil
                 </a>
@@ -96,7 +116,7 @@
                                 <h2 style="margin: 0; font-size: 18px;">{{ event.title }}</h2>
                             </a>
                             <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
-                                {{ event.date }} · {{ event.location }}
+                                {{ event.date }} · {{ event.location }} · {{ event.type }}
                                 {% if event.regionID %}
                                     · {{ event.regionID.name }}
                                 {% endif %}
@@ -106,6 +126,13 @@
                         <p style="margin: 10px 0 0; color: #374151;">
                             {{ event.description|slice(0, 200) }}{% if event.description|length > 200 %}…{% endif %}
                         </p>
+
+                        <div style="margin-top: 8px; font-size: 13px; color: #6b7280;">
+                            Note moyenne:
+                            <strong style="color: #111827;">
+                                {{ event.ratingAverage ? event.ratingAverage : '0' }}/5
+                            </strong>
+                        </div>
                     </div>
 
                     {% if is_granted('ROLE_EVENT_MANAGER') %}

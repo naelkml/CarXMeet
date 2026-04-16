@@ -47,12 +47,11 @@ final class EventsType extends AbstractType
                 'required' => false,
                 'label' => 'Cover',
             ])
-            ->add('gallery', TextType::class, [
-                'label' => 'Galerie (URLs séparées par des virgules)',
-            ])
-            ->add('ratingAverage', TextType::class, [
-                'label' => 'Note moyenne',
+            ->add('galleryPhotos', FileType::class, [
+                'mapped' => false,
                 'required' => false,
+                'multiple' => true,
+                'label' => 'Galerie (max 8 photos)',
             ])
             ->add('regionID', EntityType::class, [
                 'label' => 'Région',

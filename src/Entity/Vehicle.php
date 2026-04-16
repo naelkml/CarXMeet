@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\VehicleRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
@@ -31,8 +34,23 @@ class Vehicle
     #[ORM\Column(length: 255)]
     private ?string $preparation = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
     #[ORM\Column(type: 'blob', nullable: true)]
     private $photos;
+
+    /**
+     * @var Collection<int, VehiclePhoto>
+     */
+    #[ORM\OneToMany(targetEntity: VehiclePhoto::class, mappedBy: 'vehicleID', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $galleryPhotos;
+
+    public function __construct()
+    {
+        $this->galleryPhotos = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -110,6 +128,17 @@ class Vehicle
         return $this;
     }
 
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
     public function getPhotos()
     {
         return $this->photos;
@@ -118,6 +147,35 @@ class Vehicle
     public function setPhotos($photos): self
     {
         $this->photos = $photos;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VehiclePhoto>
+     */
+    public function getGalleryPhotos(): Collection
+    {
+        return $this->galleryPhotos;
+    }
+
+    public function addGalleryPhoto(VehiclePhoto $photo): static
+    {
+        if (!$this->galleryPhotos->contains($photo)) {
+            $this->galleryPhotos->add($photo);
+            $photo->setVehicleID($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGalleryPhoto(VehiclePhoto $photo): static
+    {
+        if ($this->galleryPhotos->removeElement($photo)) {
+            if ($photo->getVehicleID() === $this) {
+                $photo->setVehicleID(null);
+            }
+        }
+
         return $this;
     }
 
@@ -140,4 +198,3 @@ class Vehicle
         return base64_encode($data);
     }
 }
-

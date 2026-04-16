@@ -1,0 +1,55 @@
+{{ form_start(form, { attr: { style: 'display: grid; gap: 12px;' } }) }}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.brand, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.brand, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.brand) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.model, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.model, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.model) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.year, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.year, { attr: { placeholder: '2005', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.year) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.engine, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.engine, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.engine) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.preparation, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.preparation, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.preparation) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.description, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.description, { attr: { rows: 4, style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.coverPhoto, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.coverPhoto, { attr: { accept: 'image/*', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.coverPhoto) }}
+        </div>
+
+        <div style="display: grid; gap: 6px;">
+            {{ form_label(form.galleryPhotos, null, { label_attr: { style: 'font-size: 14px;' } }) }}
+            {{ form_widget(form.galleryPhotos, { attr: { accept: 'image/*', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
+            {{ form_errors(form.galleryPhotos) }}
+        </div>
+    </div>
+
+    <button type="submit" style="justify-self: start; padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+        {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}

@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Vehicle;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -29,10 +30,22 @@ final class VehicleType extends AbstractType
             ->add('preparation', TextType::class, [
                 'label' => 'Préparation',
             ])
-            ->add('photos', FileType::class, [
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
+                'required' => false,
+            ])
+            ->add('coverPhoto', FileType::class, [
                 'mapped' => false,
                 'required' => false,
+                'label' => 'Photo de couverture',
             ]);
+
+        $builder->add('galleryPhotos', FileType::class, [
+            'mapped' => false,
+            'required' => false,
+            'multiple' => true,
+            'label' => 'Galerie (max 5 photos)',
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -42,4 +55,3 @@ final class VehicleType extends AbstractType
         ]);
     }
 }
-

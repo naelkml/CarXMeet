@@ -99,6 +99,7 @@ class AppFixtures extends Fixture
                     ->setYear((string) $faker->numberBetween(1995, 2023))
                     ->setEngine($faker->randomElement(['1.2L', '1.6L', '2.0L', '2.5L turbo']))
                     ->setPreparation($faker->randomElement(['stance', 'drift', 'jdm', 'run']))
+                    ->setDescription($faker->boolean(60) ? $faker->sentence(12) : null)
                     ->setUserID($user);
 
                 $manager->persist($vehicle);
@@ -113,11 +114,12 @@ class AppFixtures extends Fixture
             $date = $faker->dateTimeBetween('-1 year', '+1 year');
             $event->setDate($date->format('Y-m-d'));
             $event->setTitle($faker->sentence(3))
+                ->setOrganisateur($faker->name())
                 ->setDescription($faker->paragraph(2))
                 ->setLocation($faker->city())
                 ->setType($faker->randomElement($eventTypes))
-                ->setCoverPhoto($faker->imageUrl(640, 480, 'cars', true))
-                ->setGallery(implode(',', [$faker->imageUrl(), $faker->imageUrl(), $faker->imageUrl()]))
+                ->setCoverPhoto(null)
+                ->setGallery(null)
                 ->setRatingAverage((string) $faker->randomFloat(1, 1, 5))
                 ->setCreatedAt(new \DateTimeImmutable())
                 ->setRegionID($faker->randomElement($regions));

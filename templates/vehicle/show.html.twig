@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CarXMeet - {{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
+
+{% block body %}
+    <style>
+        .vehicle-hero {
+            width: 100%;
+            height: 240px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
+        }
+        .vehicle-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+
+    <main style="min-height: 100vh; padding: 24px;">
+        <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;">
+            <div>
+                <h1 style="margin: 0; font-size: 22px;">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.year }})</h1>
+                <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                    {{ vehicle.engine }} · {{ vehicle.preparation }}
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="{{ path('app_garage') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                    Retour garage
+                </a>
+                <a href="{{ path('app_garage_vehicle_edit', { id: vehicle.id }) }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                    Modifier
+                </a>
+            </div>
+        </header>
+
+        {% for message in app.flashes('success') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% set img64 = vehicle.imageBase64 %}
+        {% if img64 %}
+            <div class="vehicle-hero" style="margin-bottom: 12px;">
+                <img src="data:image/jpeg;base64,{{ img64 }}" alt="Cover {{ vehicle.brand }} {{ vehicle.model }}" loading="lazy" decoding="async">
+            </div>
+        {% endif %}
+
+        <section style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
+            {% if vehicle.description %}
+                <p style="margin: 0; color: #374151; white-space: pre-wrap;">{{ vehicle.description }}</p>
+            {% else %}
+                <p style="margin: 0; color: #6b7280;">Aucune description.</p>
+            {% endif %}
+
+            {% if vehicle.galleryPhotos|length %}
+                <div style="margin-top: 16px;">
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Galerie</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                        {% for p in vehicle.galleryPhotos %}
+                            {% set p64 = p.imageBase64 %}
+                            {% if p64 %}
+                                <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #111827;">
+                                    <img src="data:image/jpeg;base64,{{ p64 }}" alt="Photo {{ vehicle.brand }} {{ vehicle.model }}" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy" decoding="async">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}
+

@@ -27,9 +27,15 @@
             <div>
                 <h1 style="margin: 0; font-size: 22px;">{{ event.title }}</h1>
                 <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
-                    {{ event.date }} · {{ event.location }}
+                    {{ event.date }} · {{ event.location }} · {{ event.type }}
                     {% if event.regionID %}
                         · {{ event.regionID.name }}
+                    {% endif %}
+                </div>
+                <div style="margin-top: 6px; font-size: 13px; color: #6b7280;">
+                    Note moyenne: <strong style="color: #111827;">{{ event.ratingAverage ? event.ratingAverage : '0' }}/5</strong>
+                    {% if myRating %}
+                        · Ma note: <strong style="color: #111827;">{{ myRating.rating }}/5</strong>
                     {% endif %}
                 </div>
             </div>
@@ -67,6 +73,35 @@
 
         <section style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;">
             <p style="margin: 0; color: #374151; white-space: pre-wrap;">{{ event.description }}</p>
+
+            <form method="post" action="{{ path('app_events_rate', { id: event.id }) }}" style="margin-top: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <input type="hidden" name="_token" value="{{ csrf_token('rate_event_' ~ event.id) }}">
+                <label for="rating" style="font-size: 14px; color: #111827; font-weight: 600;">Noter l'événement:</label>
+                <select id="rating" name="rating" style="padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 10px; background: white;">
+                    {% for i in 1..5 %}
+                        <option value="{{ i }}" {{ myRating and myRating.rating == i ? 'selected' : '' }}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" style="padding: 8px 10px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
+                    {{ myRating ? 'Mettre à jour' : 'Envoyer' }}
+                </button>
+            </form>
+
+            {% if event.galleryPhotos|length %}
+                <div style="margin-top: 16px;">
+                    <h2 style="margin: 0 0 10px; font-size: 16px;">Galerie</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                        {% for p in event.galleryPhotos %}
+                            {% set p64 = p.imageBase64 %}
+                            {% if p64 %}
+                                <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #111827;">
+                                    <img src="data:image/jpeg;base64,{{ p64 }}" alt="Photo {{ event.title }}" style="width: 100%; height: 120px; object-fit: cover; display: block;" loading="lazy" decoding="async">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
             {% if is_granted('ROLE_EVENT_MANAGER') %}
                 <form method="post" action="{{ path('app_events_delete', { id: event.id }) }}" style="margin-top: 14px;" onsubmit="return confirm('Supprimer cet événement ?');">

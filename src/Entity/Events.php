@@ -25,7 +25,7 @@ class Events
     #[ORM\Column(type: 'blob', nullable: true)]
     private $coverPhoto;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $gallery = null;
 
     #[ORM\Column(length: 255)]
@@ -61,10 +61,24 @@ class Events
     #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'eventID')]
     private Collection $participations;
 
+    /**
+     * @var Collection<int, EventPhoto>
+     */
+    #[ORM\OneToMany(targetEntity: EventPhoto::class, mappedBy: 'eventID', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $galleryPhotos;
+
+    /**
+     * @var Collection<int, EventRating>
+     */
+    #[ORM\OneToMany(targetEntity: EventRating::class, mappedBy: 'eventID', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->convoys = new ArrayCollection();
         $this->participations = new ArrayCollection();
+        $this->galleryPhotos = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -143,7 +157,7 @@ class Events
         return $this->gallery;
     }
 
-    public function setGallery(string $gallery): static
+    public function setGallery(?string $gallery): static
     {
         $this->gallery = $gallery;
 
@@ -258,6 +272,64 @@ class Events
     public function getParticipations(): Collection
     {
         return $this->participations;
+    }
+
+    /**
+     * @return Collection<int, EventPhoto>
+     */
+    public function getGalleryPhotos(): Collection
+    {
+        return $this->galleryPhotos;
+    }
+
+    public function addGalleryPhoto(EventPhoto $photo): static
+    {
+        if (!$this->galleryPhotos->contains($photo)) {
+            $this->galleryPhotos->add($photo);
+            $photo->setEventID($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGalleryPhoto(EventPhoto $photo): static
+    {
+        if ($this->galleryPhotos->removeElement($photo)) {
+            if ($photo->getEventID() === $this) {
+                $photo->setEventID(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EventRating>
+     */
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(EventRating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setEventID($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRating(EventRating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            if ($rating->getEventID() === $this) {
+                $rating->setEventID(null);
+            }
+        }
+
+        return $this;
     }
 
     public function addParticipation(Participation $participation): static

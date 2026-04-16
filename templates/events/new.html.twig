@@ -14,8 +14,18 @@
                 </a>
             </header>
 
+            {% for message in app.flashes('success') %}
+                <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
             {% include 'events/_form.html.twig' with { form: form } %}
         </section>
     </main>
 {% endblock %}
-

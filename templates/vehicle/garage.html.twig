@@ -61,49 +61,7 @@
             <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
                 <h2 style="margin: 0 0 10px; font-size: 16px;">Ajouter un véhicule</h2>
 
-                {{ form_start(form, { attr: { style: 'display: grid; gap: 12px;' } }) }}
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.brand, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.brand, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.brand) }}
-                        </div>
-
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.model, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.model, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.model) }}
-                        </div>
-
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.year, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.year, { attr: { placeholder: '2005', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.year) }}
-                        </div>
-
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.engine, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.engine, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.engine) }}
-                        </div>
-
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.preparation, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.preparation, { attr: { style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.preparation) }}
-                        </div>
-
-                        <div style="display: grid; gap: 6px;">
-                            {{ form_label(form.photos, null, { label_attr: { style: 'font-size: 14px;' } }) }}
-                            {{ form_widget(form.photos, { attr: { accept: 'image/*', style: 'padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;' } }) }}
-                            {{ form_errors(form.photos) }}
-                        </div>
-                    </div>
-
-                    <button type="submit" style="justify-self: start; padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
-                        Ajouter
-                    </button>
-                {{ form_end(form) }}
+                {% include 'vehicle/_form.html.twig' with { form: form, button_label: 'Ajouter' } %}
             </div>
 
             <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
@@ -114,7 +72,7 @@
                         {% set img64 = v.imageBase64 %}
 
                         <div class="vehicle-card">
-                            <div class="vehicle-media">
+                            <a class="vehicle-media" href="{{ path('app_garage_vehicle_show', { id: v.id }) }}" style="text-decoration: none;">
                                 {% if img64 %}
                                     <img src="data:image/jpeg;base64,{{ img64 }}" alt="Photo {{ v.brand }} {{ v.model }}" loading="lazy" decoding="async">
                                 {% else %}
@@ -122,23 +80,30 @@
                                         Pas de photo
                                     </div>
                                 {% endif %}
-                            </div>
+                            </a>
 
                             <div>
                                 <div style="font-weight: 700; color: #111827;">
-                                    {{ v.brand }} {{ v.model }} ({{ v.year }})
+                                    <a href="{{ path('app_garage_vehicle_show', { id: v.id }) }}" style="text-decoration: none; color: #111827;">
+                                        {{ v.brand }} {{ v.model }} ({{ v.year }})
+                                    </a>
                                 </div>
                                 <div style="margin-top: 4px; font-size: 13px; color: #6b7280;">
                                     {{ v.engine }} · {{ v.preparation }}
                                 </div>
                             </div>
 
-                            <form method="post" action="{{ path('app_garage_vehicle_delete', { id: v.id }) }}" onsubmit="return confirm('Supprimer ce véhicule ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_' ~ v.id) }}">
-                                <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
-                                    Supprimer
-                                </button>
-                            </form>
+                            <div style="display: grid; gap: 10px; justify-items: end;">
+                                <a href="{{ path('app_garage_vehicle_edit', { id: v.id }) }}" style="font-size: 14px; text-decoration: none; color: #111827;">
+                                    Modifier
+                                </a>
+                                <form method="post" action="{{ path('app_garage_vehicle_delete', { id: v.id }) }}" onsubmit="return confirm('Supprimer ce véhicule ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_' ~ v.id) }}">
+                                    <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #991b1b; color: white; cursor: pointer;">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     {% else %}
                         <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
