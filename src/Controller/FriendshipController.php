@@ -77,20 +77,20 @@ final class FriendshipController extends AbstractController
 
         if (!$this->isCsrfTokenValid('friend_remove_' . $target->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_users_show', ['id' => $target->getId()]);
+            return $this->redirectToRoute('app_users');
         }
 
         $existing = $friendshipRepository->findAcceptedBetween($user, $target);
         if (!$existing) {
             $this->addFlash('info', 'Vous n\'êtes pas amis.');
-            return $this->redirectToRoute('app_users_show', ['id' => $target->getId()]);
+            return $this->redirectToRoute('app_users');
         }
 
         $em->remove($existing);
         $em->flush();
 
         $this->addFlash('success', 'Ami supprimé.');
-        return $this->redirectToRoute('app_users_show', ['id' => $target->getId()]);
+        return $this->redirectToRoute('app_users');
     }
 
     #[Route('/api/friendships', name: 'api_friendships_list', methods: ['GET'])]
