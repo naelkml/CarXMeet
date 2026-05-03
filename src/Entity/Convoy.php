@@ -2,39 +2,52 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ConvoyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ConvoyRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['convoy:read']],
+    denormalizationContext: ['groups' => ['convoy:write']]
+)]
 class Convoy
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['convoy:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'convoys')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['convoy:read', 'convoy:write'])]
     private ?Events $eventID = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['convoy:read', 'convoy:write'])]
     private ?string $departureLocation = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['convoy:read', 'convoy:write'])]
     private ?string $departureTime = null;
 
     #[ORM\Column(length: 10, nullable: true)]
+    #[Groups(['convoy:read', 'convoy:write'])]
     private ?string $departureDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['convoy:read', 'convoy:write'])]
     private ?string $participants = null;
 
     /**
      * @var Collection<int, ConvoyParticipation>
      */
     #[ORM\OneToMany(targetEntity: ConvoyParticipation::class, mappedBy: 'convoyID', orphanRemoval: true, cascade: ['persist'])]
+    #[Groups(['convoy:read'])]
     private Collection $memberships;
 
     public function __construct()

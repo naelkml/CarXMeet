@@ -2,33 +2,45 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\EventRatingRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EventRatingRepository::class)]
 #[ORM\Table(name: 'event_rating', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_event_user', columns: ['event_id_id', 'user_id_id'])])]
+#[ApiResource(
+    normalizationContext: ['groups' => ['event_rating:read']],
+    denormalizationContext: ['groups' => ['event_rating:write']]
+)]
 class EventRating
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['event_rating:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['event_rating:read', 'event_rating:write'])]
     private ?Events $eventID = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['event_rating:read', 'event_rating:write'])]
     private ?User $userID = null;
 
     #[ORM\Column]
+    #[Groups(['event_rating:read', 'event_rating:write'])]
     private ?int $rating = null;
 
     #[ORM\Column]
+    #[Groups(['event_rating:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['event_rating:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
@@ -87,4 +99,3 @@ class EventRating
         return $this->updatedAt;
     }
 }
-

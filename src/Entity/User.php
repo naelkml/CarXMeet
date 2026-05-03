@@ -4,6 +4,8 @@ namespace App\Entity;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -13,48 +15,56 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
 # [ORM\EntityListeners('App\EventListener\UserListener')]
-
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[Groups(['user:read'])]
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
     #[ORM\Column(length: 255)]
     private string $password;
+    #[Groups(['user:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255)]
     private ?string $firstName = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255)]
     private ?string $lastName = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255)]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user:write'])]
     private ?string $phone = null;
 
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
 
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $snapchat = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $instagram = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $twitter = null;
-
+    #[Groups(['user:read','user:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $tiktok = null;
 
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
@@ -100,6 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $articles;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['user:read'])]
     private bool $isVerified = false;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

@@ -2,25 +2,34 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\VehiclePhotoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: VehiclePhotoRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['vehicle_photo:read']],
+    denormalizationContext: ['groups' => ['vehicle_photo:write']]
+)]
 class VehiclePhoto
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['vehicle_photo:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'galleryPhotos')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['vehicle_photo:read', 'vehicle_photo:write'])]
     private ?Vehicle $vehicleID = null;
 
     #[ORM\Column(type: 'blob')]
     private $photo;
 
     #[ORM\Column]
+    #[Groups(['vehicle_photo:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
@@ -60,6 +69,7 @@ class VehiclePhoto
         return $this->createdAt;
     }
 
+    #[Groups(['vehicle_photo:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->photo) {
@@ -79,4 +89,3 @@ class VehiclePhoto
         return base64_encode($data);
     }
 }
-

@@ -2,75 +2,96 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\EventsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['event:read']],
+    denormalizationContext: ['groups' => ['event:write']]
+)]
 class Events
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['event:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'blob', nullable: true)]
     private $coverPhoto;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $gallery = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $Date = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $location = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read'])]
     private ?string $ratingAverage = null;
 
     #[ORM\Column]
+    #[Groups(['event:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $organisateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
+    #[Groups(['event:read', 'event:write'])]
     private ?Region $regionID = null;
 
     /**
      * @var Collection<int, Convoy>
      */
     #[ORM\OneToMany(targetEntity: Convoy::class, mappedBy: 'eventID')]
+    #[Groups(['event:read'])]
     private Collection $convoys;
 
     /**
      * @var Collection<int, Participation>
      */
     #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'eventID')]
+    #[Groups(['event:read'])]
     private Collection $participations;
 
     /**
      * @var Collection<int, EventPhoto>
      */
     #[ORM\OneToMany(targetEntity: EventPhoto::class, mappedBy: 'eventID', orphanRemoval: true, cascade: ['persist'])]
+    #[Groups(['event:read'])]
     private Collection $galleryPhotos;
 
     /**
      * @var Collection<int, EventRating>
      */
     #[ORM\OneToMany(targetEntity: EventRating::class, mappedBy: 'eventID', orphanRemoval: true, cascade: ['persist'])]
+    #[Groups(['event:read'])]
     private Collection $ratings;
 
     public function __construct()
@@ -133,6 +154,7 @@ class Events
         return $this;
     }
 
+    #[Groups(['event:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->coverPhoto) {
@@ -257,7 +279,6 @@ class Events
     public function removeConvoy(Convoy $convoy): static
     {
         if ($this->convoys->removeElement($convoy)) {
-            // set the owning side to null (unless already changed)
             if ($convoy->getEventID() === $this) {
                 $convoy->setEventID(null);
             }
@@ -345,7 +366,6 @@ class Events
     public function removeParticipation(Participation $participation): static
     {
         if ($this->participations->removeElement($participation)) {
-            // set the owning side to null (unless already changed)
             if ($participation->getEventID() === $this) {
                 $participation->setEventID(null);
             }

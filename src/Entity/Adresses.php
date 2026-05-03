@@ -2,31 +2,43 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AdressesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AdressesRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['adresse:read']],
+    denormalizationContext: ['groups' => ['adresse:write']]
+)]
 class Adresses
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['adresse:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['adresse:read', 'adresse:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['adresse:read', 'adresse:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['adresse:read', 'adresse:write'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['adresse:read', 'adresse:write'])]
     private ?string $websiteUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'adresses')]
+    #[Groups(['adresse:read', 'adresse:write'])]
     private ?Region $regionID = null;
 
     public function getId(): ?int

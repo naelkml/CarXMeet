@@ -2,20 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\RegionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RegionRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['region:read']],
+    denormalizationContext: ['groups' => ['region:write']]
+)]
 class Region
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['region:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['region:read', 'region:write'])]
     private ?string $name = null;
 
     /**
@@ -74,7 +82,6 @@ class Region
     public function removeEvent(Events $event): static
     {
         if ($this->events->removeElement($event)) {
-            // set the owning side to null (unless already changed)
             if ($event->getRegionID() === $this) {
                 $event->setRegionID(null);
             }
@@ -104,7 +111,6 @@ class Region
     public function removeAdress(Adresses $adress): static
     {
         if ($this->adresses->removeElement($adress)) {
-            // set the owning side to null (unless already changed)
             if ($adress->getRegionID() === $this) {
                 $adress->setRegionID(null);
             }

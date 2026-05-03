@@ -2,39 +2,53 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\VehicleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['vehicle:read']],
+    denormalizationContext: ['groups' => ['vehicle:write']]
+)]
 class Vehicle
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['vehicle:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'vehicles')]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?User $userID = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 4)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $year = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $engine = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $preparation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'blob', nullable: true)]
@@ -44,6 +58,7 @@ class Vehicle
      * @var Collection<int, VehiclePhoto>
      */
     #[ORM\OneToMany(targetEntity: VehiclePhoto::class, mappedBy: 'vehicleID', orphanRemoval: true, cascade: ['persist'])]
+    #[Groups(['vehicle:read'])]
     private Collection $galleryPhotos;
 
     public function __construct()
@@ -179,6 +194,7 @@ class Vehicle
         return $this;
     }
 
+    #[Groups(['vehicle:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->photos) {

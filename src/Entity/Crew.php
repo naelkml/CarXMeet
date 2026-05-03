@@ -2,40 +2,53 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CrewRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CrewRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['crew:read']],
+    denormalizationContext: ['groups' => ['crew:write']]
+)]
 class Crew
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['crew:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['crew:read', 'crew:write'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['crew:read', 'crew:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['crew:read', 'crew:write'])]
     private ?string $logo = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['crew:read', 'crew:write'])]
     private ?User $CreatedBy = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'crewID')]
+    #[Groups(['crew:read', 'crew:write'])]
     private Collection $members;
 
     #[ORM\Column]
+    #[Groups(['crew:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
