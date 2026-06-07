@@ -5,10 +5,21 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\VehiclePhotoRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use App\Controller\Api\Vehicle\DeleteVehiclePhotoController;
 
 #[ORM\Entity(repositoryClass: VehiclePhotoRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['vehicle_photo:read']]),
+        new Get(normalizationContext: ['groups' => ['vehicle_photo:read']]),
+        new Delete(
+            controller: DeleteVehiclePhotoController::class,
+        ),
+    ],
     normalizationContext: ['groups' => ['vehicle_photo:read']],
     denormalizationContext: ['groups' => ['vehicle_photo:write']]
 )]

@@ -7,10 +7,24 @@ use App\Repository\ConvoyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use App\Controller\Api\Convoy\CreateConvoyController;
 
 #[ORM\Entity(repositoryClass: ConvoyRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['convoy:read']]),
+        new Get(normalizationContext: ['groups' => ['convoy:read']]),
+        new Post(
+            controller: CreateConvoyController::class,
+            deserialize: false,
+            read: false,
+            normalizationContext: ['groups' => ['convoy:read']],
+        ),
+    ],
     normalizationContext: ['groups' => ['convoy:read']],
     denormalizationContext: ['groups' => ['convoy:write']]
 )]

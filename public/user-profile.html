@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarXMeet — Profil</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/user-profile.css" />
+</head>
+<body class="p-4 min-h-screen">
+<div id="root"></div>
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function getToken() { return localStorage.getItem('jwt_token'); }
+    function authHeaders(extra = {}) { return { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json', ...extra }; }
+    function decodeToken() {
+        try {
+            const payload = JSON.parse(atob(getToken().split('.')[1]));
+            return { username: payload.username || payload.sub };
+        } catch { return null; }
+    }
+    function getUserIdFromUrl() { return new URLSearchParams(window.location.search).get('id'); }
+
+    function Avatar({ user, size = 80 }) {
+        const initials = (user?.username || '?').substring(0, 2).toUpperCase();
+        if (user?.profileImageBase64) {
+            return (
+                <div className="avatar" style={{ width: size, height: size }}>
+                    <img src={`data:image/jpeg;base64,${user.profileImageBase64}`} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+            );
+        }
+        return <div className="avatar" style={{ width: size, height: size, fontSize: size * 0.35 }}>{initials}</div>;
+    }
+
+    function UserProfilePage() {
+        const [profileUser, setProfileUser] = useState(null);
+        const [myUserId, setMyUserId] = useState(null);
+        const [myUsername, setMyUsername] = useState('');
+        const [friendship, setFriendship] = useState(null);
+        const [vehicles, setVehicles] = useState([]);
+        const [events, setEvents] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [alert, setAlert] = useState(null);
+        const targetId = getUserIdFromUrl();
+
+        useEffect(() => {
+            const token = getToken();
+            if (!token) { window.location.href = '/connexion.html'; return; }
+            const decoded = decodeToken();
+            if (!decoded) { window.location.href = '/connexion.html'; return; }
+            setMyUsername(decoded.username);
+
+            if (!targetId) { setLoading(false); return; }
+
+            fetch(`/api/users?username=${decoded.username}`, { headers: authHeaders() })
+                .then(r => {
+                    if (r.status === 401) { localStorage.removeItem('jwt_token'); window.location.href = '/connexion.html'; return null; }
+                    return r.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    const users = data['member'] || data['hydra:member'] || [];
+                    const me = users.find(u => u.username === decoded.username);
+                    if (!me) return;
+                    setMyUserId(me.id);
+
+                    return Promise.all([
+                        fetch(`/api/users/${targetId}`, { headers: authHeaders() }).then(r => r.json()),
+                        fetch(`/api/friendships?requesterId=${me.id}`, { headers: authHeaders() }).then(r => r.json()),
+                        fetch(`/api/vehicles?ownerID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
+                        fetch(`/api/participations?userID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
+                    ]).then(([user, friendsData, vehiclesData, eventsData]) => {
+                        setProfileUser(user);
+                        const fList = friendsData['member'] || friendsData['hydra:member'] || [];
+                        const f = fList.find(f => {
+                            const rid = typeof f.receiverId === 'object' ? f.receiverId?.id : f.receiverId;
+                            return String(rid) === String(targetId);
+                        });
+                        setFriendship(f || null);
+                        setVehicles(vehiclesData['member'] || vehiclesData['hydra:member'] || []);
+                        setEvents(eventsData['member'] || eventsData['hydra:member'] || []);
+                    });
+                })
+                .catch(() => setAlert({ type: 'error', message: 'Impossible de charger le profil.' }))
+                .finally(() => setLoading(false));
+        }, [targetId]);
+
+        const isMe = myUserId && String(myUserId) === String(targetId);
+        const isFriend = friendship?.status === 'accepted';
+        const isPending = friendship?.status === 'pending';
+        const canSeePrivate = isMe || isFriend;
+
+        async function handleAddFriend() {
+            try {
+                const res = await fetch('/api/friendships', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ requesterId: `/api/users/${myUserId}`, receiverId: `/api/users/${targetId}`, status: 'pending' })
+                });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                setFriendship(data);
+                setAlert({ type: 'success', message: 'Demande d\'amitié envoyée !' });
+            } catch { setAlert({ type: 'error', message: 'Impossible d\'envoyer la demande.' }); }
+        }
+
+        async function handleRemoveFriend() {
+            if (!confirm('Supprimer cet ami ?')) return;
+            try {
+                await fetch(`/api/friendships/${friendship.id}`, { method: 'DELETE', headers: authHeaders() });
+                setFriendship(null);
+                setAlert({ type: 'success', message: 'Ami retiré.' });
+            } catch { setAlert({ type: 'error', message: 'Impossible de retirer cet ami.' }); }
+        }
+
+        if (loading) {
+            return (
+                <div className="max-w-2xl mx-auto pt-8">
+                    <div className="skeleton" style={{ height: 300, borderRadius: 16 }} />
+                </div>
+            );
+        }
+
+        if (!profileUser) {
+            return (
+                <div className="max-w-2xl mx-auto pt-8">
+                    <div className="rounded-xl p-4 bg-red-900 bg-opacity-50 border border-red-500 text-red-200 text-sm">
+                        {alert?.message || 'Utilisateur introuvable.'}
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-6 pt-6">
+                    <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
+                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                </div>
+
+                {alert && (
+                    <div className={`rounded-xl p-3 mb-4 text-sm ${alert.type === 'success' ? 'bg-green-900 bg-opacity-50 border border-green-500 text-green-200' : 'bg-red-900 bg-opacity-50 border border-red-500 text-red-200'}`}>
+                        {alert.message}
+                    </div>
+                )}
+
+                {/* Header profil */}
+                <div className="card rounded-2xl p-6 shadow-2xl mb-4">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <a href="/users.html" className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
+                            ← Retour
+                        </a>
+                        {isMe && (
+                            <a href="/profile-edit.html" className="btn-dark inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
+                                Modifier mon profil
+                            </a>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                        <Avatar user={profileUser} size={80} />
+                        <div style={{ textAlign: 'center' }}>
+                            <div className="text-white font-bold" style={{ fontSize: 20 }}>{profileUser.username}</div>
+                            <div style={{ fontSize: 14, color: '#9ca3af', marginTop: 4 }}>{profileUser.firstName} {profileUser.lastName}</div>
+                        </div>
+
+                        {!isMe && (
+                            <div>
+                                {isFriend ? (
+                                    <button onClick={handleRemoveFriend} className="btn-danger px-4 py-2 rounded-xl text-sm font-medium">
+                                        Supprimer ami
+                                    </button>
+                                ) : isPending ? (
+                                    <span style={{ fontSize: 13, color: '#9ca3af' }}>Demande envoyée</span>
+                                ) : (
+                                    <button onClick={handleAddFriend} className="btn-dark px-4 py-2 rounded-xl text-sm font-medium">
+                                        Ajouter en ami
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Véhicules */}
+                <div className="card rounded-2xl p-5 shadow-2xl mb-4">
+                    <h3 className="text-white font-bold m-0 mb-4" style={{ fontSize: 16 }}>Véhicules</h3>
+                    {canSeePrivate ? (
+                        vehicles.length > 0 ? (
+                            <div style={{ display: 'grid', gap: 10 }}>
+                                {vehicles.map(v => (
+                                    <a key={v.id} href={`/vehicle-detail.html?id=${v.id}`} style={{ textDecoration: 'none' }}>
+                                        <div className="inner-card rounded-xl p-3" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <div className="vehicle-thumb">
+                                                {v.imageBase64
+                                                    ? <img src={`data:image/jpeg;base64,${v.imageBase64}`} alt={`${v.brand} ${v.model}`} loading="lazy" />
+                                                    : <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: '#6b7280', fontSize: 11 }}>📷</div>
+                                                }
+                                            </div>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div className="text-white font-bold text-sm">{v.brand} {v.model} ({v.year})</div>
+                                                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{v.engine} · {v.preparation}</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                                Aucun véhicule pour le moment.
+                            </div>
+                        )
+                    ) : (
+                        <div style={{ padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                            Tu peux voir les véhicules uniquement si vous êtes amis.
+                        </div>
+                    )}
+                </div>
+
+                {/* Événements */}
+                <div className="card rounded-2xl p-5 shadow-2xl mb-4">
+                    <h3 className="text-white font-bold m-0 mb-4" style={{ fontSize: 16 }}>Événements</h3>
+                    {canSeePrivate ? (
+                        events.length > 0 ? (
+                            <div style={{ display: 'grid', gap: 10 }}>
+                                {events.map(p => {
+                                    const ev = typeof p.eventID === 'object' ? p.eventID : null;
+                                    if (!ev) return null;
+                                    return (
+                                        <a key={p.id} href={`/event-detail.html?id=${ev.id}`} style={{ textDecoration: 'none' }}>
+                                            <div className="inner-card rounded-xl p-3">
+                                                <div className="text-white font-bold text-sm">{ev.title}</div>
+                                                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                                                    {[ev.Date, ev.location, ev.type].filter(Boolean).join(' · ')}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div style={{ padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                                Aucun événement.
+                            </div>
+                        )
+                    ) : (
+                        <div style={{ padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                            Tu peux voir les événements uniquement si vous êtes amis.
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<UserProfilePage />);
+</script>
+</body>
+</html>

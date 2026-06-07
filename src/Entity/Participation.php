@@ -5,13 +5,27 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 
 #[ORM\Entity(repositoryClass: ParticipationRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['participation:read']]),
+        new Get(normalizationContext: ['groups' => ['participation:read']]),
+        new Post(denormalizationContext: ['groups' => ['participation:write']]),
+        new Delete(),
+    ],
     normalizationContext: ['groups' => ['participation:read']],
     denormalizationContext: ['groups' => ['participation:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['userID' => 'exact', 'eventID' => 'exact'])]
+
 class Participation
 {
     #[ORM\Id]

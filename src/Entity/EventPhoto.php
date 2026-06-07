@@ -5,10 +5,21 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\EventPhotoRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use App\Controller\Api\Event\DeleteEventPhotoController;
 
 #[ORM\Entity(repositoryClass: EventPhotoRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['event_photo:read']]),
+        new Get(normalizationContext: ['groups' => ['event_photo:read']]),
+        new Delete(
+            controller: DeleteEventPhotoController::class,
+        ),
+    ],
     normalizationContext: ['groups' => ['event_photo:read']],
     denormalizationContext: ['groups' => ['event_photo:write']]
 )]

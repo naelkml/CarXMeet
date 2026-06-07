@@ -6,10 +6,15 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ArticlesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 #[ORM\Entity(repositoryClass: ArticlesRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['article:read']]),
+        new Get(normalizationContext: ['groups' => ['article:read']]),
+    ],
     normalizationContext: ['groups' => ['article:read']],
     denormalizationContext: ['groups' => ['article:write']]
 )]

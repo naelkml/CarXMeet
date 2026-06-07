@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarXMeet — Connexion</title>
+
+    <link rel="stylesheet" href="./styles/connexion.css">
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="page-container">
+<div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // ─── Composant : InputField ───────────────────────────────────────────────
+    function InputField({ label, id, type = "text", value, onChange, placeholder, hasError }) {
+      return (
+          <div>
+              <label htmlFor={id} className="form-label">{label}</label>
+          <input
+            id={id}
+            type={type}
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`input-field ${hasError ? 'error' : ''}`}
+          />
+        </div>
+      );
+    }
+
+    // ─── Composant : PasswordField ────────────────────────────────────────────
+    function PasswordField({ label, id, value, onChange, placeholder, hasError }) {
+      const [visible, setVisible] = useState(false);
+      return (
+        <div>
+            <label htmlFor={id} className="form-label">{label}</label>
+            <div className="relative-container">
+            <input
+              id={id}
+              type={visible ? "text" : "password"}
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              placeholder={placeholder}
+              className={`input-field password-field ${hasError ? 'error' : ''}`}
+            />
+            <button
+              type="button"
+              onClick={() => setVisible(v => !v)}
+              className="password-toggle" tabIndex={-1}
+            >
+              {visible ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── Composant : AlertBox ─────────────────────────────────────────────────
+    function AlertBox({ type, messages }) {
+      const isSuccess = type === 'success';
+      return (
+          <div className={`alert ${isSuccess ? 'alert-success' : 'alert-error'}`}>
+              <div className="alert-content">
+                  <div className="alert-icon">
+                  {isSuccess ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  </div>
+                <div>
+                  {messages.map((msg, i) => (
+                      <p key={i} className="alert-message">{msg}</p>
+                  ))}
+                </div>
+              </div>
+          </div>
+      );
+    }
+
+    // ─── Composant : LoginForm ────────────────────────────────────────────────
+    function LoginForm() {
+      const [username, setUsername] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [alert, setAlert] = useState(null);
+      const [fieldErrors, setFieldErrors] = useState({});
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setAlert(null);
+
+        const errors = {};
+        if (!username.trim()) errors.username = true;
+        if (!password) errors.password = true;
+
+        if (Object.keys(errors).length > 0) {
+          setFieldErrors(errors);
+          setAlert({ type: 'error', messages: ['Nom d\'utilisateur et mot de passe obligatoires'] });
+          return;
+        }
+
+        setFieldErrors({});
+        setLoading(true);
+
+        try {
+          const response = await fetch('/api/login_check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username.trim(), password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.token) {
+            // Stocke le token JWT dans localStorage
+            localStorage.setItem('jwt_token', data.token);
+            setAlert({ type: 'success', messages: ['Connexion réussie ! Redirection…'] });
+            setTimeout(() => { window.location.href = '/home.html'; }, 1200);
+          } else {
+            setAlert({ type: 'error', messages: [data.message || 'Identifiants incorrects'] });
+          }
+        } catch (err) {
+          setAlert({ type: 'error', messages: ['Impossible de contacter le serveur. Réessaie plus tard.'] });
+        } finally {
+          setLoading(false);
+        }
+      };
+
+        return (
+            <div className="page-container">
+
+                <div className="form-container">
+
+                    {/* HEADER */}
+                    <div className="header">
+                        <h1 className="logo-text">CarXMeet</h1>
+                        <p className="subtitle">
+                            La communauté des passionnés de voitures
+                        </p>
+                    </div>
+
+                    {/* CARD */}
+                    <div className="card">
+
+                        <h2 className="card-title">Connexion</h2>
+
+                        {alert && (
+                            <AlertBox type={alert.type} messages={alert.messages} />
+                        )}
+
+                        <form onSubmit={handleSubmit} noValidate>
+
+                            <div className="form-group">
+
+                                <InputField
+                                    label="Nom d'utilisateur"
+                                    id="username"
+                                    value={username}
+                                    onChange={v => {
+                                        setUsername(v);
+                                        setFieldErrors(e => ({ ...e, username: false }));
+                                    }}
+                                    placeholder="nael_kml"
+                                    hasError={fieldErrors.username}
+                                />
+
+                                <PasswordField
+                                    label="Mot de passe"
+                                    id="password"
+                                    value={password}
+                                    onChange={v => {
+                                        setPassword(v);
+                                        setFieldErrors(e => ({ ...e, password: false }));
+                                    }}
+                                    placeholder="Ton mot de passe"
+                                    hasError={fieldErrors.password}
+                                />
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn-primary"
+                            >
+                                {loading ? "Connexion..." : "Se connecter"}
+                            </button>
+
+                            <p className="register-text">
+                                Pas encore de compte ?{" "}
+                                <a href="/inscription.html" className="register-link">
+                                    S'inscrire
+                                </a>
+                            </p>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+
+
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<LoginForm />);
+  </script>
+</body>
+</html>

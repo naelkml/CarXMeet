@@ -92,11 +92,4 @@ final class FriendshipController extends AbstractController
         $this->addFlash('success', 'Ami supprimé.');
         return $this->redirectToRoute('app_users');
     }
-
-    #[Route('/api/friendships', name: 'api_friendships_list', methods: ['GET'])]
-    public function list(FriendshipRepository $friendshipRepository): Response
-    {
-        $friendships = $friendshipRepository->findAll();
-        return $this->json($friendships);
-    }
 }

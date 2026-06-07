@@ -8,13 +8,37 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use App\Controller\Api\Event\CreateEventController;
+use App\Controller\Api\Event\UpdateEventController;
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['event:read']]),
+        new Get(normalizationContext: ['groups' => ['event:read']]),
+        new Post(
+            controller: CreateEventController::class,
+            deserialize: false,
+            read: false,
+            normalizationContext: ['groups' => ['event:read']],
+        ),
+        new Patch(
+            controller: UpdateEventController::class,
+            deserialize: false,
+            normalizationContext: ['groups' => ['event:read']],
+        ),
+    ],
     normalizationContext: ['groups' => ['event:read']],
     denormalizationContext: ['groups' => ['event:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['regionID' => 'exact'])]
 class Events
 {
     #[ORM\Id]

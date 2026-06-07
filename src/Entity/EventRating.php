@@ -5,14 +5,27 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\EventRatingRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 #[ORM\Entity(repositoryClass: EventRatingRepository::class)]
 #[ORM\Table(name: 'event_rating', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_event_user', columns: ['event_id_id', 'user_id_id'])])]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['event_rating:read']]),
+        new Get(normalizationContext: ['groups' => ['event_rating:read']]),
+        new Post(denormalizationContext: ['groups' => ['event_rating:write']]),
+        new Patch(denormalizationContext: ['groups' => ['event_rating:write']]),
+    ],
     normalizationContext: ['groups' => ['event_rating:read']],
     denormalizationContext: ['groups' => ['event_rating:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['userID' => 'exact', 'eventID' => 'exact'])]
+
 class EventRating
 {
     #[ORM\Id]

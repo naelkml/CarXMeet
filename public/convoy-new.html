@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarXMeet — Créer un convoi</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/convoy-new.css" />
+</head>
+<body class="flex items-center justify-center p-4 py-10 min-h-screen">
+<div id="root" class="w-full"></div>
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function getToken() { return localStorage.getItem('jwt_token'); }
+    function authHeaders(extra = {}) { return { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json', ...extra }; }
+    function decodeToken() {
+        try {
+            const payload = JSON.parse(atob(getToken().split('.')[1]));
+            return { username: payload.username || payload.sub };
+        } catch { return null; }
+    }
+    function getEventIdFromUrl() { return new URLSearchParams(window.location.search).get('event'); }
+
+    function ConvoyNewPage() {
+        const [fields, setFields] = useState({ departureLocation: '', departureDate: '', departureTime: '' });
+        const [loading, setLoading] = useState(false);
+        const [alert, setAlert] = useState(null);
+        const [myUserId, setMyUserId] = useState(null);
+        const eventId = getEventIdFromUrl();
+
+        useEffect(() => {
+            const token = getToken();
+            if (!token) { window.location.href = '/connexion.html'; return; }
+            const decoded = decodeToken();
+            if (!decoded) { window.location.href = '/connexion.html'; return; }
+
+            fetch(`/api/users?username=${decoded.username}`, { headers: authHeaders() })
+                .then(r => {
+                    if (r.status === 401) { localStorage.removeItem('jwt_token'); window.location.href = '/connexion.html'; return null; }
+                    return r.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    const users = data['member'] || data['hydra:member'] || [];
+                    const me = users.find(u => u.username === decoded.username);
+                    if (me) setMyUserId(me.id);
+                })
+                .catch(() => {});
+        }, []);
+
+        const set = field => value => setFields(f => ({ ...f, [field]: value }));
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            if (!fields.departureLocation.trim()) {
+                setAlert({ type: 'error', message: 'Le lieu de départ est obligatoire.' });
+                return;
+            }
+            setLoading(true);
+            setAlert(null);
+            try {
+                const res = await fetch('/api/convoys', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        eventID: `/api/events/${eventId}`,
+                        departureLocation: fields.departureLocation.trim(),
+                        departureDate: fields.departureDate || null,
+                        departureTime: fields.departureTime || null,
+                    })
+                });
+                if (!res.ok) throw new Error();
+                setAlert({ type: 'success', message: 'Convoi créé !' });
+                setTimeout(() => { window.location.href = `/event-detail.html?id=${eventId}`; }, 1200);
+            } catch {
+                setAlert({ type: 'error', message: 'Impossible de créer le convoi.' });
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        return (
+            <div className="w-full max-w-lg mx-auto">
+                <div className="text-center mb-6">
+                    <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
+                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                </div>
+
+                <div className="card rounded-2xl p-6 shadow-2xl">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <h2 className="text-white font-bold text-lg m-0">Créer un convoi</h2>
+                        {eventId && (
+                            <a href={`/event-detail.html?id=${eventId}`} className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
+                                ← Retour événement
+                            </a>
+                        )}
+                    </div>
+
+                    {alert && (
+                        <div className={`rounded-xl p-3 mb-4 text-sm ${alert.type === 'success' ? 'bg-green-900 bg-opacity-50 border border-green-500 text-green-200' : 'bg-red-900 bg-opacity-50 border border-red-500 text-red-200'}`}>
+                            {alert.message}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
+                        <div>
+                            <label className="input-label">Lieu de départ *</label>
+                            <input type="text" className="input-field" value={fields.departureLocation} onChange={e => set('departureLocation')(e.target.value)} placeholder="Paris, Place de la République" />
+                        </div>
+                        <div>
+                            <label className="input-label">Date de départ</label>
+                            <input type="date" className="input-field" value={fields.departureDate} onChange={e => set('departureDate')(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="input-label">Heure de départ</label>
+                            <input type="time" className="input-field" value={fields.departureTime} onChange={e => set('departureTime')(e.target.value)} />
+                        </div>
+                        <button type="submit" disabled={loading} className="btn-primary w-full font-semibold py-3 px-6 rounded-xl text-sm">
+                            {loading ? 'Création en cours…' : 'Créer le convoi'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ConvoyNewPage />);
+</script>
+</body>
+</html>

@@ -5,15 +5,27 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ConvoyParticipationRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 #[ORM\Entity(repositoryClass: ConvoyParticipationRepository::class)]
 #[ORM\Table(name: 'convoy_participation')]
 #[ORM\UniqueConstraint(name: 'uniq_convoy_user', columns: ['convoy_id_id', 'user_id_id'])]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['convoy_participation:read']]),
+        new Get(normalizationContext: ['groups' => ['convoy_participation:read']]),
+        new Post(denormalizationContext: ['groups' => ['convoy_participation:write']]),
+        new Delete(),
+    ],
     normalizationContext: ['groups' => ['convoy_participation:read']],
     denormalizationContext: ['groups' => ['convoy_participation:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['convoyID' => 'exact', 'userID' => 'exact'])]
 class ConvoyParticipation
 {
     #[ORM\Id]

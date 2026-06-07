@@ -6,10 +6,16 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AdressesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 
 #[ORM\Entity(repositoryClass: AdressesRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['adresse:read']]),
+        new Get(normalizationContext: ['groups' => ['adresse:read']]),
+    ],
     normalizationContext: ['groups' => ['adresse:read']],
     denormalizationContext: ['groups' => ['adresse:write']]
 )]

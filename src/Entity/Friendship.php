@@ -5,13 +5,27 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\FriendshipRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
+
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['friendship:read']]),
+        new Get(normalizationContext: ['groups' => ['friendship:read']]),
+        new Post(denormalizationContext: ['groups' => ['friendship:write']]),
+        new Delete(),
+    ],
     normalizationContext: ['groups' => ['friendship:read']],
     denormalizationContext: ['groups' => ['friendship:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['requesterId' => 'exact', 'receiverId' => 'exact', 'status' => 'exact'])]
 class Friendship
 {
     #[ORM\Id]

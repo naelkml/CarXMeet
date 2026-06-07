@@ -23,6 +23,9 @@ security:
                 check_path: /api/login_check
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        api_docs: # ← nouveau firewall avant api
+            pattern: ^/api(/docs.*|$)      # cible /api et /api/docs...
+            security: false
         api:
             pattern: ^/api
             stateless: true
@@ -50,7 +53,9 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/home, roles: ROLE_USER }
         - { path: ^/profil, roles: ROLE_USER }
         - { path: ^/garage, roles: ROLE_USER }

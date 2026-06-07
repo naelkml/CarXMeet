@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarXMeet — Événements</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/events.css" />
+</head>
+<body class="p-4 min-h-screen">
+
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // ─── Utilitaires ──────────────────────────────────────────────────────────
+    function getToken() {
+        return localStorage.getItem('jwt_token');
+    }
+
+    function getRegionIdFromUrl() {
+        return new URLSearchParams(window.location.search).get('region');
+    }
+
+    function authHeaders() {
+        return { 'Authorization': 'Bearer ' + getToken() };
+    }
+
+    // ─── Composant : NavButton ────────────────────────────────────────────────
+    function NavButton({ href, variant = 'outline', onClick, children }) {
+        const cls = `${variant === 'dark' ? 'btn-dark' : 'btn-outline'} inline-block px-3 py-2 rounded-xl text-sm font-medium cursor-pointer`;
+        if (onClick) return <button onClick={onClick} className={cls}>{children}</button>;
+        return <a href={href} className={cls}>{children}</a>;
+    }
+
+    // ─── Composant : StarRating ───────────────────────────────────────────────
+    function StarRating({ value }) {
+        const v = parseFloat(value) || 0;
+        return (
+            <span style={{ color: '#fbbf24', fontSize: 13 }}>
+                {'★'.repeat(Math.round(v))}{'☆'.repeat(5 - Math.round(v))}
+                <span style={{ color: '#9ca3af', marginLeft: 4 }}>{v.toFixed(1)}/5</span>
+            </span>
+        );
+    }
+
+    // ─── Composant : EventCard ────────────────────────────────────────────────
+    function EventCard({ event }) {
+        const desc = event.description || '';
+        const shortDesc = desc.length > 200 ? desc.slice(0, 200) + '…' : desc;
+        const regionName = event.regionID?.name;
+
+        return (
+            <article className="event-card rounded-2xl p-4" style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                {/* Image */}
+                <a href={`/event-detail.html?id=${event.id}`} className="event-media" style={{ textDecoration: 'none' }}>
+                    {event.imageBase64 ? (
+                        <img
+                            src={`data:image/jpeg;base64,${event.imageBase64}`}
+                            alt={`Cover ${event.title}`}
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: '#6b7280', fontSize: 12 }}>
+                            📷
+                        </div>
+                    )}
+                </a>
+
+                {/* Infos */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <a href={`/event-detail.html?id=${event.id}`} style={{ textDecoration: 'none' }}>
+                        <h2 className="text-white font-bold" style={{ margin: 0, fontSize: 17 }}>{event.title}</h2>
+                    </a>
+                    <div style={{ marginTop: 5, fontSize: 13, color: '#9ca3af' }}>
+                        {[event.Date, event.location, event.type, regionName].filter(Boolean).join(' · ')}
+                    </div>
+                    <p style={{ margin: '8px 0 0', color: '#d1d5db', fontSize: 14, lineHeight: 1.5 }}>
+                        {shortDesc}
+                    </p>
+                    <div style={{ marginTop: 8 }}>
+                        <StarRating value={event.ratingAverage} />
+                    </div>
+                </div>
+
+                {/* Lien détail */}
+                <div style={{ flexShrink: 0 }}>
+                    <a
+                        href={`/event-detail.html?id=${event.id}`}
+                        className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium"
+                        style={{ textDecoration: 'none' }}
+                    >
+                        Voir
+                    </a>
+                </div>
+            </article>
+        );
+    }
+
+    // ─── Composant : SkeletonEvent ────────────────────────────────────────────
+    function SkeletonEvent() {
+        return (
+            <div style={{ display: 'grid', gap: 10 }}>
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="skeleton" style={{ height: 110 }} />
+                ))}
+            </div>
+        );
+    }
+
+    // ─── Composant : EventsPage ───────────────────────────────────────────────
+    function EventsPage() {
+        const [events, setEvents]       = useState([]);
+        const [region, setRegion]       = useState(null);
+        const [loading, setLoading]     = useState(true);
+        const [error, setError]         = useState(null);
+        const [sort, setSort]           = useState('date_asc');
+        const [username, setUsername]   = useState('');
+
+        const regionId = getRegionIdFromUrl();
+
+        useEffect(() => {
+            const token = getToken();
+            if (!token) { window.location.href = '/connexion.html'; return; }
+
+            // Décode le username depuis le JWT
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUsername(payload.username || payload.sub || '');
+            } catch (e) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/connexion.html';
+                return;
+            }
+
+            // Fetch région si filtre actif
+            if (regionId) {
+                fetch(`/api/regions/${regionId}`, { headers: authHeaders() })
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => { if (data) setRegion(data); })
+                    .catch(() => {});
+            }
+
+            // Fetch événements
+            const url = regionId
+                ? `/api/events?regionID=${regionId}`
+                : `/api/events`;
+
+            fetch(url, { headers: authHeaders() })
+                .then(res => {
+                    if (res.status === 401) {
+                        localStorage.removeItem('jwt_token');
+                        window.location.href = '/connexion.html';
+                        return null;
+                    }
+                    if (!res.ok) throw new Error('server_error');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    setEvents(data['member'] || data['hydra:member'] || []);
+                })
+                .catch(() => setError('Impossible de charger les événements. Réessaie plus tard.'))
+                .finally(() => setLoading(false));
+        }, []);
+
+        // ─── Tri côté client ──────────────────────────────────────────────────
+        const sortedEvents = [...events].sort((a, b) => {
+            switch (sort) {
+                case 'date_asc':     return (a.Date || '').localeCompare(b.Date || '');
+                case 'date_desc':    return (b.Date || '').localeCompare(a.Date || '');
+                case 'type_asc':     return (a.type || '').localeCompare(b.type || '');
+                case 'type_desc':    return (b.type || '').localeCompare(a.type || '');
+                case 'rating_desc':  return (parseFloat(b.ratingAverage) || 0) - (parseFloat(a.ratingAverage) || 0);
+                case 'rating_asc':   return (parseFloat(a.ratingAverage) || 0) - (parseFloat(b.ratingAverage) || 0);
+                case 'created_desc': return (b.createdAt || '').localeCompare(a.createdAt || '');
+                case 'created_asc':  return (a.createdAt || '').localeCompare(b.createdAt || '');
+                default:             return 0;
+            }
+        });
+
+        return (
+            <div className="max-w-4xl mx-auto">
+                {/* Header logo */}
+                <div className="text-center mb-8 pt-6">
+                    <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
+                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                </div>
+
+                {/* Topbar */}
+                <div className="card rounded-2xl p-5 shadow-2xl mb-6">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+
+                        {/* Titre + région */}
+                        <div>
+                            <h2 className="text-white font-bold text-lg m-0">Événements</h2>
+                            {region && (
+                                <p className="text-gray-400 text-xs m-0 mt-1">
+                                    Région : <strong className="text-gray-200">{region.name}</strong>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            {/* Tri */}
+                            <select
+                                className="select-field"
+                                value={sort}
+                                onChange={e => setSort(e.target.value)}
+                            >
+                                <option value="date_asc">Date (croissante)</option>
+                                <option value="date_desc">Date (décroissante)</option>
+                                <option value="type_asc">Type (A → Z)</option>
+                                <option value="type_desc">Type (Z → A)</option>
+                                <option value="rating_desc">Notation (meilleure)</option>
+                                <option value="rating_asc">Notation (moins bonne)</option>
+                                <option value="created_desc">Ancienneté (nouveaux)</option>
+                                <option value="created_asc">Ancienneté (anciens)</option>
+                            </select>
+
+                            <NavButton href="/home.html" variant="outline">Retour accueil</NavButton>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Liste événements */}
+                <div className="card rounded-2xl p-6 shadow-2xl">
+                    {loading && <SkeletonEvent />}
+
+                    {!loading && error && (
+                        <div className="rounded-xl p-4 bg-red-900 bg-opacity-50 border border-red-500">
+                            <p className="text-sm text-red-200">{error}</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && sortedEvents.length === 0 && (
+                        <div style={{ padding: 16, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                            Aucun événement pour le moment.
+                        </div>
+                    )}
+
+                    {!loading && !error && sortedEvents.length > 0 && (
+                        <div style={{ display: 'grid', gap: 10 }}>
+                            {sortedEvents.map(event => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<EventsPage />);
+</script>
+</body>
+</html>

@@ -8,10 +8,36 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use App\Controller\Api\Vehicle\CreateVehicleController;
+use App\Controller\Api\Vehicle\UpdateVehicleController;
+use App\Controller\Api\Vehicle\DeleteVehicleController;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['vehicle:read']]),
+        new Get(normalizationContext: ['groups' => ['vehicle:read']]),
+        new Post(
+            controller: CreateVehicleController::class,
+            deserialize: false,
+            read: false,
+            normalizationContext: ['groups' => ['vehicle:read']],
+        ),
+        new Patch(
+            controller: UpdateVehicleController::class,
+            deserialize: false,
+            normalizationContext: ['groups' => ['vehicle:read']],
+        ),
+        new Delete(
+            controller: DeleteVehicleController::class,
+        ),
+    ],
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']]
 )]

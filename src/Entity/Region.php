@@ -1,16 +1,21 @@
 <?php
 
 namespace App\Entity;
-
+use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\RegionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 
 #[ORM\Entity(repositoryClass: RegionRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['region:read']]),
+        new Get(normalizationContext: ['groups' => ['region:read']]),
+    ],
     normalizationContext: ['groups' => ['region:read']],
     denormalizationContext: ['groups' => ['region:write']]
 )]

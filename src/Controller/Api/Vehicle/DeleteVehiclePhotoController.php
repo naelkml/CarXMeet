@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Controller\Api\Vehicle;
+
+use App\Entity\User;
+use App\Entity\VehiclePhoto;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
+#[AsController]
+final class DeleteVehiclePhotoController extends AbstractController
+{
+    public function __construct(private readonly EntityManagerInterface $em)
+    {
+    }
+
+    public function __invoke(VehiclePhoto $photo): void
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        $vehicle = $photo->getVehicleID();
+        if (!$user instanceof User || !$vehicle || $vehicle->getUserID()?->getId() !== $user->getId()) {
+            throw new AccessDeniedHttpException('Cette photo ne vous appartient pas.');
+        }
+
+        $this->em->remove($photo);
+        $this->em->flush();
+    }
+}

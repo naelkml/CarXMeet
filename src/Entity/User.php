@@ -5,17 +5,31 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use ApiPlatform\Metadata\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use App\Controller\Api\User\UpdateUserController;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
 # [ORM\EntityListeners('App\EventListener\UserListener')]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['user:read']]),
+        new Get(normalizationContext: ['groups' => ['user:read']]),
+        new Patch(
+            controller: UpdateUserController::class,
+            deserialize: false,
+            normalizationContext: ['groups' => ['user:read']],
+        ),
+    ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']]
 )]
@@ -43,7 +57,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:write'])]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $phone = null;
 
     #[Groups(['user:read','user:write'])]
@@ -524,6 +538,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['user:read'])]
     public function getProfileImageBase64(): ?string
     {
         if (!$this->profilePhoto) {

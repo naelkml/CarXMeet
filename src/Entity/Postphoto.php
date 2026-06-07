@@ -5,10 +5,16 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PostphotoRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 
 #[ORM\Entity(repositoryClass: PostphotoRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(normalizationContext: ['groups' => ['postphoto:read']]),
+        new Get(normalizationContext: ['groups' => ['postphoto:read']]),
+    ],
     normalizationContext: ['groups' => ['postphoto:read']],
     denormalizationContext: ['groups' => ['postphoto:write']]
 )]

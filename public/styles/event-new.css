@@ -1,0 +1,16 @@
+body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 100vh; }
+.card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+.logo-text { background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #d1d5db; transition: all 0.2s; cursor: pointer; }
+.btn-outline:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.35); color: #fff; transform: translateY(-1px); }
+.btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; transition: all 0.2s; cursor: pointer; }
+.btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #2563eb, #1e40af); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.input-field { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 10px; padding: 10px 12px; font-size: 14px; width: 100%; box-sizing: border-box; }
+.input-field::placeholder { color: rgba(255,255,255,0.4); }
+.input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+.input-label { font-size: 14px; color: #d1d5db; margin-bottom: 4px; display: block; }
+.select-field { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 10px; padding: 10px 12px; font-size: 14px; width: 100%; box-sizing: border-box; }
+.select-field option { background: #1e3a5f; color: #fff; }
+.skeleton { background: rgba(255,255,255,0.07); border-radius: 12px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }

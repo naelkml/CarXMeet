@@ -8,7 +8,6 @@ use App\Entity\Events;
 use App\Entity\User;
 use App\Form\ConvoyType;
 use App\Repository\ConvoyParticipationRepository;
-use App\Repository\ConvoyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -108,12 +107,5 @@ final class ConvoyController extends AbstractController
 
         $this->addFlash('success', 'Tu as quitté le convoi.');
         return $this->redirectToRoute('app_events_show', ['id' => $convoy->getEventID()?->getId()]);
-    }
-
-    #[Route('/api/convoys', name: 'api_convoys_list', methods: ['GET'])]
-    public function list(ConvoyRepository $convoyRepository): Response
-    {
-        $convoys = $convoyRepository->findAll();
-        return $this->json($convoys);
     }
 }
