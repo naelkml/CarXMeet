@@ -5,10 +5,12 @@ namespace App\Controller\Api\Vehicle;
 use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Entity\VehiclePhoto;
+use App\Service\Api\ApiJsonResponder;
 use App\Service\Api\FormDataHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -16,11 +18,13 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 #[AsController]
 final class CreateVehicleController extends AbstractController
 {
-    public function __construct(private readonly EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ApiJsonResponder $responder,
+    ) {
     }
 
-    public function __invoke(Request $request): Vehicle
+    public function __invoke(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -69,6 +73,6 @@ final class CreateVehicleController extends AbstractController
         $this->em->persist($vehicle);
         $this->em->flush();
 
-        return $vehicle;
+        return $this->responder->item($vehicle, Response::HTTP_CREATED, ['vehicle:read']);
     }
 }

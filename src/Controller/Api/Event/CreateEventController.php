@@ -5,10 +5,12 @@ namespace App\Controller\Api\Event;
 use App\Entity\EventPhoto;
 use App\Entity\Events;
 use App\Entity\Region;
+use App\Service\Api\ApiJsonResponder;
 use App\Service\Api\FormDataHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,11 +18,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[AsController]
 final class CreateEventController extends AbstractController
 {
-    public function __construct(private readonly EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ApiJsonResponder $responder,
+    ) {
     }
 
-    public function __invoke(Request $request): Events
+    public function __invoke(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_EVENT_MANAGER');
 
@@ -59,7 +63,7 @@ final class CreateEventController extends AbstractController
         $this->em->persist($event);
         $this->em->flush();
 
-        return $event;
+        return $this->responder->item($event, Response::HTTP_CREATED, ['event:read']);
     }
 
     private function attachGalleryPhotos(Events $event, Request $request, int $max): void

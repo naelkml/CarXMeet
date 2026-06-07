@@ -5,10 +5,12 @@ namespace App\Controller\Api\Convoy;
 use App\Entity\Convoy;
 use App\Entity\Events;
 use App\Entity\User;
+use App\Service\Api\ApiJsonResponder;
 use App\Service\Api\FormDataHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -19,11 +21,13 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 #[AsController]
 final class CreateConvoyController extends AbstractController
 {
-    public function __construct(private readonly EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ApiJsonResponder $responder,
+    ) {
     }
 
-    public function __invoke(Request $request): Convoy
+    public function __invoke(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -68,7 +72,7 @@ final class CreateConvoyController extends AbstractController
         $this->em->persist($convoy);
         $this->em->flush();
 
-        return $convoy;
+        return $this->responder->item($convoy, Response::HTTP_CREATED, ['convoy:read']);
     }
 
     /**

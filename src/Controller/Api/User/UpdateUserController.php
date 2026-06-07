@@ -4,11 +4,13 @@ namespace App\Controller\Api\User;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Service\Api\ApiJsonResponder;
 use App\Service\Api\FormDataHelper;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -19,10 +21,11 @@ final class UpdateUserController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UserRepository $userRepository,
+        private readonly ApiJsonResponder $responder,
     ) {
     }
 
-    public function __invoke(User $user, Request $request): User
+    public function __invoke(User $user, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -79,6 +82,6 @@ final class UpdateUserController extends AbstractController
             throw new BadRequestHttpException('Email ou nom d\'utilisateur déjà utilisé.');
         }
 
-        return $user;
+        return $this->responder->item($user, Response::HTTP_OK, ['user:read']);
     }
 }
