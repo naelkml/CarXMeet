@@ -46,7 +46,7 @@
     }
 
     // ─── Composant : UserBadge ────────────────────────────────────────────────
-    function UserBadge({ user, isMe, isFriend, onAddFriend, onRemoveFriend }) {
+    function UserBadge({ user, isMe, isFriend, isPending, onAddFriend, onRemoveFriend }) {
         return (
             <div className="inner-card rounded-xl p-3" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <Avatar user={user} size={40} />
@@ -57,7 +57,9 @@
                 {!isMe && (
                     isFriend
                         ? <button onClick={onRemoveFriend} className="btn-danger px-3 py-1 rounded-xl text-xs font-medium">Retirer</button>
-                        : <button onClick={onAddFriend} className="btn-dark px-3 py-1 rounded-xl text-xs font-medium">Ajouter en ami</button>
+                        : isPending
+                            ? <span style={{ fontSize: 12, color: '#9ca3af' }}>Demande envoyée</span>
+                            : <button onClick={onAddFriend} className="btn-dark px-3 py-1 rounded-xl text-xs font-medium">Ajouter en ami</button>
                 )}
                 {isMe && <span style={{ fontSize: 12, color: '#9ca3af' }}>Moi</span>}
             </div>
@@ -104,6 +106,8 @@
         const [myUsername, setMyUsername]         = useState('');
         const [roles, setRoles]                   = useState([]);
         const [convoyMemberships, setConvoyMemberships] = useState([]);
+        const [participants, setParticipants]     = useState([]);
+        const [convoys, setConvoys]               = useState([]);
 
         const eventId = getEventIdFromUrl();
 
@@ -169,6 +173,16 @@
                     fetch(`/api/friendships?requesterId=${me.id}`, { headers: { 'Authorization': 'Bearer ' + token } })
                         .then(r => r.json())
                         .then(d => setFriendships(d['member'] || d['hydra:member'] || []));
+
+                    // Participants de l'événement
+                    fetch(`/api/participations?eventID=${eventId}`, { headers: { 'Authorization': 'Bearer ' + token } })
+                        .then(r => r.json())
+                        .then(d => setParticipants(d['member'] || d['hydra:member'] || []));
+
+                    // Convois de l'événement
+                    fetch(`/api/convoys?eventID=${eventId}`, { headers: { 'Authorization': 'Bearer ' + token } })
+                        .then(r => r.json())
+                        .then(d => setConvoys(d['member'] || d['hydra:member'] || []));
                 });
 
             // 3 — Convoy memberships
@@ -181,11 +195,20 @@
         // ── Helpers ───────────────────────────────────────────────────────────
         const isEventManager = roles.includes('ROLE_EVENT_MANAGER');
 
-        function isFriendWith(userId) {
-            return friendships.some(f => {
+        function friendshipWith(userId) {
+            return friendships.find(f => {
                 const rid = typeof f.receiverId === 'object' ? f.receiverId?.id : f.receiverId;
-                return rid === userId && f.status === 'accepted';
+                const req = typeof f.requesterId === 'object' ? f.requesterId?.id : f.requesterId;
+                return rid === userId || req === userId;
             });
+        }
+
+        function isFriendWith(userId) {
+            return friendshipWith(userId)?.status === 'accepted';
+        }
+
+        function isPendingWith(userId) {
+            return friendshipWith(userId)?.status === 'pending';
         }
 
         function isConvoyMember(convoyId) {
@@ -222,6 +245,7 @@
                 const data = await res.json();
                 setMyParticipation(data);
                 setAlert({ type: 'success', message: 'Tu participes maintenant à cet événement !' });
+                refreshParticipants();
                 refreshEvent();
             } catch { setAlert({ type: 'error', message: 'Impossible de rejoindre l\'événement.' }); }
         }
@@ -233,6 +257,7 @@
                 await fetch(`/api/participations/${myParticipation.id}`, { method: 'DELETE', headers: authHeaders() });
                 setMyParticipation(null);
                 setAlert({ type: 'success', message: 'Tu as quitté l\'événement.' });
+                refreshParticipants();
                 refreshEvent();
             } catch { setAlert({ type: 'error', message: 'Impossible de quitter l\'événement.' }); }
         }
@@ -269,9 +294,9 @@
         }
 
         async function handleAddFriend(userId) {
-            if (!myUserId) return;
+            if (!myUserId || !userId) return;
             try {
-                await fetch('/api/friendships', {
+                const res = await fetch('/api/friendships', {
                     method: 'POST',
                     headers: authHeaders(),
                     body: JSON.stringify({
@@ -280,20 +305,16 @@
                         status: 'pending'
                     })
                 });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                setFriendships(prev => [...prev, data]);
                 setAlert({ type: 'success', message: 'Demande d\'amitié envoyée !' });
-                const token = getToken();
-                fetch(`/api/friendships?requesterId=${myUserId}`, { headers: { 'Authorization': 'Bearer ' + token } })
-                    .then(r => r.json())
-                    .then(d => setFriendships(d['member'] || d['hydra:member'] || []));
             } catch { setAlert({ type: 'error', message: 'Impossible d\'envoyer la demande.' }); }
         }
 
         async function handleRemoveFriend(userId) {
             if (!confirm('Supprimer cet ami ?')) return;
-            const f = friendships.find(f => {
-                const rid = typeof f.receiverId === 'object' ? f.receiverId?.id : f.receiverId;
-                return rid === userId;
-            });
+            const f = friendshipWith(userId);
             if (!f) return;
             try {
                 await fetch(`/api/friendships/${f.id}`, { method: 'DELETE', headers: authHeaders() });
@@ -318,6 +339,7 @@
                 const data = await res.json();
                 setConvoyMemberships(prev => [...prev, data]);
                 setAlert({ type: 'success', message: 'Tu as rejoint le convoi !' });
+                refreshConvoys();
             } catch { setAlert({ type: 'error', message: 'Impossible de rejoindre le convoi.' }); }
         }
 
@@ -329,6 +351,7 @@
                 await fetch(`/api/convoy_participations/${membershipId}`, { method: 'DELETE', headers: authHeaders() });
                 setConvoyMemberships(prev => prev.filter(m => m.id !== membershipId));
                 setAlert({ type: 'success', message: 'Tu as quitté le convoi.' });
+                refreshConvoys();
             } catch { setAlert({ type: 'error', message: 'Impossible de quitter le convoi.' }); }
         }
 
@@ -336,6 +359,20 @@
             fetch(`/api/events/${eventId}`, { headers: { 'Authorization': 'Bearer ' + getToken() } })
                 .then(r => r.json())
                 .then(data => setEvent(data))
+                .catch(() => {});
+        }
+
+        function refreshParticipants() {
+            fetch(`/api/participations?eventID=${eventId}`, { headers: { 'Authorization': 'Bearer ' + getToken() } })
+                .then(r => r.json())
+                .then(d => setParticipants(d['member'] || d['hydra:member'] || []))
+                .catch(() => {});
+        }
+
+        function refreshConvoys() {
+            fetch(`/api/convoys?eventID=${eventId}`, { headers: { 'Authorization': 'Bearer ' + getToken() } })
+                .then(r => r.json())
+                .then(d => setConvoys(d['member'] || d['hydra:member'] || []))
                 .catch(() => {});
         }
 
@@ -363,8 +400,6 @@
             );
         }
 
-        const participants = event.participations || [];
-        const convoys = event.convoys || [];
         const photos = (event.galleryPhotos || []).filter(p => p.imageBase64);
         const regionId = event.regionID?.id;
 
@@ -471,6 +506,7 @@
                                         user={user}
                                         isMe={isMe}
                                         isFriend={isFriendWith(userId)}
+                                        isPending={isPendingWith(userId)}
                                         onAddFriend={() => handleAddFriend(userId)}
                                         onRemoveFriend={() => handleRemoveFriend(userId)}
                                     />
@@ -519,9 +555,7 @@
                         </div>
                     ) : (
                         <div style={{ display: 'grid', gap: 12 }}>
-                            {convoys.map((convoy, i) => {
-                                const c = typeof convoy === 'object' ? convoy : null;
-                                if (!c) return null;
+                            {convoys.map((c, i) => {
                                 const isMember = isConvoyMember(c.id);
                                 const members = c.memberships || [];
                                 return (
@@ -555,6 +589,7 @@
                                                                 user={user}
                                                                 isMe={isMe}
                                                                 isFriend={isFriendWith(userId)}
+                                                                isPending={isPendingWith(userId)}
                                                                 onAddFriend={() => handleAddFriend(userId)}
                                                                 onRemoveFriend={() => handleRemoveFriend(userId)}
                                                             />

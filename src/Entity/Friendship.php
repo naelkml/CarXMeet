@@ -17,8 +17,8 @@ use ApiPlatform\Metadata\ApiFilter;
 
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['friendship:read']]),
-        new Get(normalizationContext: ['groups' => ['friendship:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['friendship:read', 'user:read']]),
+        new Get(normalizationContext: ['groups' => ['friendship:read', 'user:read']]),
         new Post(denormalizationContext: ['groups' => ['friendship:write']]),
         new Delete(),
     ],

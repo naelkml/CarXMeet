@@ -16,8 +16,8 @@ use ApiPlatform\Metadata\ApiFilter;
 #[ORM\Entity(repositoryClass: ParticipationRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['participation:read']]),
-        new Get(normalizationContext: ['groups' => ['participation:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['participation:read', 'user:read']]),
+        new Get(normalizationContext: ['groups' => ['participation:read', 'user:read']]),
         new Post(denormalizationContext: ['groups' => ['participation:write']]),
         new Delete(),
     ],

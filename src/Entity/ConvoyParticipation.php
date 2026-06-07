@@ -17,8 +17,8 @@ use ApiPlatform\Metadata\ApiFilter;
 #[ORM\UniqueConstraint(name: 'uniq_convoy_user', columns: ['convoy_id_id', 'user_id_id'])]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['convoy_participation:read']]),
-        new Get(normalizationContext: ['groups' => ['convoy_participation:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['convoy_participation:read', 'user:read']]),
+        new Get(normalizationContext: ['groups' => ['convoy_participation:read', 'user:read']]),
         new Post(denormalizationContext: ['groups' => ['convoy_participation:write']]),
         new Delete(),
     ],

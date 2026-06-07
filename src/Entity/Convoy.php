@@ -12,12 +12,14 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Api\Convoy\CreateConvoyController;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 
 #[ORM\Entity(repositoryClass: ConvoyRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['convoy:read']]),
-        new Get(normalizationContext: ['groups' => ['convoy:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['convoy:read', 'convoy_participation:read', 'user:read']]),
+        new Get(normalizationContext: ['groups' => ['convoy:read', 'convoy_participation:read', 'user:read']]),
         new Post(
             controller: CreateConvoyController::class,
             deserialize: false,
@@ -28,6 +30,7 @@ use App\Controller\Api\Convoy\CreateConvoyController;
     normalizationContext: ['groups' => ['convoy:read']],
     denormalizationContext: ['groups' => ['convoy:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['eventID' => 'exact'])]
 class Convoy
 {
     #[ORM\Id]
