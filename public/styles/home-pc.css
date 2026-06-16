@@ -1,0 +1,93 @@
+/* ================= MAP WRAP ================= */
+
+.map-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+}
+
+.map-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* ================= MARKERS ================= */
+
+.map-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.map-marker .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #fff7ed;
+    box-shadow: 0 0 0 0 rgb(29 78 216);
+    animation: map-pulse 2.4s infinite;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.map-marker:hover .dot,
+.map-marker:focus .dot {
+    transform: scale(1.35);
+    background: #1d4ed8;
+}
+
+/* ================= TOOLTIP ================= */
+
+.map-marker .map-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #111827;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f9fafb;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.map-marker:hover .map-tooltip,
+.map-marker:focus .map-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.map-marker .map-tooltip strong {
+    color: #3b82f6;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes map-pulse {
+    0%   { box-shadow: 0 0 0 0 rgb(29 78 216); }
+    70%  { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+}
+
+/* ================= SKELETON ================= */
+
+.map-skeleton {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+}

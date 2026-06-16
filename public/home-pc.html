@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarXMeet — Accueil</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/home.css" />
+    <link rel="stylesheet" href="./styles/home-pc.css" />
+</head>
+<body class="p-4 min-h-screen">
+
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // ─── Composant : Avatar ───────────────────────────────────────────────────
+    function Avatar({ user }) {
+        if (!user) {
+            return <div className="avatar rounded-full" style={{ width: 54, height: 54 }} />;
+        }
+        if (user.profileImageBase64) {
+            return (
+                <div className="avatar rounded-full" style={{ width: 54, height: 54 }}>
+                    <img
+                        src={`data:image/jpeg;base64,${user.profileImageBase64}`}
+                        alt="Photo de profil"
+                        loading="lazy"
+                        decoding="async"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                </div>
+            );
+        }
+        const initials = (user.username || '?').substring(0, 2).toUpperCase();
+        return (
+            <div className="avatar rounded-full" style={{ width: 54, height: 54 }}>
+                {initials}
+            </div>
+        );
+    }
+
+    // ─── Composant : NavButton ────────────────────────────────────────────────
+    function NavButton({ href, variant = 'outline', onClick, children }) {
+        const cls = `${variant === 'dark' ? 'btn-dark' : variant === 'danger' ? 'btn-danger' : 'btn-outline'} inline-block px-3 py-2 rounded-xl text-sm font-medium cursor-pointer`;
+        if (onClick) {
+            return <button onClick={onClick} className={cls}>{children}</button>;
+        }
+        return <a href={href} className={cls}>{children}</a>;
+    }
+
+    // ─── Données : positions des régions sur la carte (en % de l'image) ───────
+    // Coordonnées approximatives, calculées à partir du centroïde géographique
+    // de chaque région, projetées sur le visuel france-map.png (1024x1024).
+    // Ajuste les valeurs ci-dessous si un point ne tombe pas exactement où tu veux.
+    const REGION_POSITIONS = {
+        'ile-de-france':              { x: 52.1, y: 29.7 },
+        'centre-val-de-loire':        { x: 47.5, y: 40.0 },
+        'bourgogne-franche-comte':    { x: 66.9, y: 42.7 },
+        'normandie':                  { x: 37.4, y: 26.3 },
+        'hauts-de-france':            { x: 53.9, y: 18.5 },
+        'grand-est':                  { x: 69.8, y: 29.7 },
+        'pays-de-la-loire':           { x: 32.7, y: 40.0 },
+        'bretagne':                   { x: 20.3, y: 34.0 },
+        'nouvelle-aquitaine':         { x: 37.4, y: 59.1 },
+        'occitanie':                  { x: 51.0, y: 71.1 },
+        'auvergne-rhone-alpes':       { x: 64.0, y: 57.3 },
+        'provence-alpes-cote-d-azur': { x: 73.9, y: 70.3 },
+        'corse':                      { x: 92.0, y: 85.3 },
+    };
+
+    // Quelques alias pour matcher différentes façons d'écrire le même nom
+    const REGION_ALIASES = {
+        'paca': 'provence-alpes-cote-d-azur',
+        'rhone-alpes': 'auvergne-rhone-alpes',
+        'franche-comte': 'bourgogne-franche-comte',
+        'pays-de-loire': 'pays-de-la-loire',
+        'idf': 'ile-de-france',
+    };
+
+    function normalizeRegionName(name) {
+        if (!name) return '';
+        const slug = name
+            .toString()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
+            .toLowerCase()
+            .replace(/['’]/g, '-')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        return REGION_ALIASES[slug] || slug;
+    }
+
+    // ─── Composant : MapMarker ─────────────────────────────────────────────────
+    function MapMarker({ region, position }) {
+        return (
+            <a
+                href={`/events.html?region=${region.id}`}
+                className="map-marker"
+                style={{ left: `${position.x}%`, top: `${position.y}%` }}
+                aria-label={`${region.name}${region.eventsCount !== undefined ? `, ${region.eventsCount} événement(s)` : ''}`}
+            >
+                <span className="dot" />
+                <span className="map-tooltip">
+                    <strong>{region.name}</strong>
+                    {region.eventsCount !== undefined && (
+                        <> — {region.eventsCount} évén.{region.eventsCount !== 1 ? 's' : ''}</>
+                    )}
+                </span>
+            </a>
+        );
+    }
+
+    // ─── Composant : RegionsMap ────────────────────────────────────────────────
+    function RegionsMap({ regions }) {
+        const { matched, unmatched } = useMemo(() => {
+            const matched = [];
+            const unmatched = [];
+            regions.forEach(region => {
+                const key = normalizeRegionName(region.name);
+                const position = REGION_POSITIONS[key];
+                if (position) {
+                    matched.push({ region, position });
+                } else {
+                    unmatched.push(region);
+                }
+            });
+            return { matched, unmatched };
+        }, [regions]);
+
+        return (
+            <div>
+                <div className="map-wrap">
+                    <img src="./images/carte.png" alt="Carte des régions de France" />
+                    {matched.map(({ region, position }) => (
+                        <MapMarker key={region.id} region={region} position={position} />
+                    ))}
+                </div>
+
+                {unmatched.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>
+                            Autres régions :
+                        </p>
+                        <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
+                            {unmatched.map(region => (
+                                <a
+                                    key={region.id}
+                                    href={`/events.html?region=${region.id}`}
+                                    className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium"
+                                    style={{ textDecoration: 'none' }}
+                                >
+                                    {region.name}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ─── Composant : AlertBox ─────────────────────────────────────────────────
+    function AlertBox({ type, message }) {
+        const isError = type === 'error';
+        return (
+            <div className={`rounded-xl p-4 ${isError ? 'bg-red-900 bg-opacity-50 border border-red-500' : 'bg-yellow-900 bg-opacity-50 border border-yellow-500'}`}>
+                <p className={`text-sm ${isError ? 'text-red-200' : 'text-yellow-200'}`}>{message}</p>
+            </div>
+        );
+    }
+
+    // ─── Composant : HomePage ─────────────────────────────────────────────────
+    function HomePage() {
+        const [user, setUser] = useState(null);
+        const [regions, setRegions] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState(null);
+
+        useEffect(() => {
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                window.location.href = '/connexion.html';
+                return;
+            }
+
+            // Décode le username directement depuis le token JWT (pas besoin d'appel API)
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUser({ username: payload.username || payload.sub });
+            } catch (e) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/connexion.html';
+                return;
+            }
+
+            // Fetch regions
+            fetch('/api/regions', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+                .then(res => {
+                    if (res.status === 401) {
+                        localStorage.removeItem('jwt_token');
+                        window.location.href = '/connexion.html';
+                        return null;
+                    }
+                    if (!res.ok) throw new Error('server_error');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    setRegions(data['member'] || []);
+                })
+                .catch(() => setError('Impossible de charger les régions. Réessaie plus tard.'))
+                .finally(() => setLoading(false));
+        }, []);
+
+        const handleLogout = () => {
+            localStorage.removeItem('jwt_token');
+            window.location.href = '/connexion.html';
+        };
+
+        return (
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="text-center mb-8 pt-6">
+                    <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
+                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                </div>
+
+                {/* Topbar */}
+                <div className="card rounded-2xl p-5 shadow-2xl mb-6">
+                    <div className="flex items-center justify-between gap-4" style={{ flexWrap: 'wrap' }}>
+
+                        {/* Identité */}
+                        <div className="flex items-center gap-3">
+                            <Avatar user={user} />
+                            <div>
+                                <h2 className="text-white font-bold text-lg m-0">Accueil</h2>
+                                {user ? (
+                                    <p className="text-gray-400 text-xs mt-0.5 m-0">
+                                        Connecté en tant que <strong className="text-gray-200">{user.username}</strong>
+                                    </p>
+                                ) : (
+                                    <div className="skeleton" style={{ height: 14, width: 160, borderRadius: 6, marginTop: 4 }} />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            <NavButton href="/profile-edit.html" variant="dark">Modifier mon profil</NavButton>
+                            <NavButton href="/users.html" variant="outline">Utilisateurs</NavButton>
+                            <NavButton href="/friends.html" variant="outline">Amis</NavButton>
+                            <NavButton onClick={handleLogout} variant="danger">Se déconnecter</NavButton>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Régions */}
+                <div className="card rounded-2xl p-6 shadow-2xl">
+                    <h3 className="text-white font-bold text-lg mb-4">Carte</h3>
+
+                    {loading && (
+                        <div className="map-wrap">
+                            <div className="skeleton map-skeleton" />
+                        </div>
+                    )}
+
+                    {!loading && error && <AlertBox type="error" message={error} />}
+
+                    {!loading && !error && regions.length === 0 && (
+                        <div style={{ padding: 16, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>
+                            Aucune région en base. Les fixtures ou migrations doivent ajouter les régions.
+                        </div>
+                    )}
+
+                    {!loading && !error && regions.length > 0 && (
+                        <RegionsMap regions={regions} />
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<HomePage />);
+</script>
+</body>
+</html>
