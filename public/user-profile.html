@@ -71,19 +71,18 @@
 
                     return Promise.all([
                         fetch(`/api/users/${targetId}`, { headers: authHeaders() }).then(r => r.json()),
-                        fetch(`/api/friendships?requesterId=${me.id}`, { headers: authHeaders() }).then(r => r.json()),
+                        fetch(`/api/friendships?requesterId=${me.id}&receiverId=${targetId}`, { headers: authHeaders() }).then(r => r.json()),
+                        fetch(`/api/friendships?requesterId=${targetId}&receiverId=${me.id}`, { headers: authHeaders() }).then(r => r.json()),
                         fetch(`/api/vehicles?ownerID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
                         fetch(`/api/participations?userID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
-                    ]).then(([user, friendsData, vehiclesData, eventsData]) => {
+                    ]).then(([user, friendsData1, friendsData2, vehiclesData, eventsData]) => {
                         setProfileUser(user);
-                        const fList = friendsData['member'] || friendsData['hydra:member'] || [];
-                        const f = fList.find(f => {
-                            const rid = typeof f.receiverId === 'object' ? f.receiverId?.id : f.receiverId;
-                            return String(rid) === String(targetId);
-                        });
-                        setFriendship(f || null);
-                        setVehicles(vehiclesData['member'] || vehiclesData['hydra:member'] || []);
-                        setEvents(eventsData['member'] || eventsData['hydra:member'] || []);
+                        const fList1 = friendsData1['member'] ?? friendsData1['hydra:member'] ?? [];
+                        const fList2 = friendsData2['member'] ?? friendsData2['hydra:member'] ?? [];
+                        const f = [...fList1, ...fList2][0] || null;
+                        setFriendship(f);
+                        setVehicles(vehiclesData['member'] ?? vehiclesData['hydra:member'] ?? []);
+                        setEvents(eventsData['member'] ?? eventsData['hydra:member'] ?? []);
                     });
                 })
                 .catch(() => setAlert({ type: 'error', message: 'Impossible de charger le profil.' }))
@@ -91,8 +90,8 @@
         }, [targetId]);
 
         const isMe = myUserId && String(myUserId) === String(targetId);
-        const isFriend = friendship?.status === 'accepted';
-        const isPending = friendship?.status === 'pending';
+        const isFriend = !!friendship;
+        const isPending = false;
         const canSeePrivate = isMe || isFriend;
 
         async function handleAddFriend() {
@@ -100,12 +99,12 @@
                 const res = await fetch('/api/friendships', {
                     method: 'POST',
                     headers: authHeaders(),
-                    body: JSON.stringify({ requesterId: `/api/users/${myUserId}`, receiverId: `/api/users/${targetId}`, status: 'pending' })
+                    body: JSON.stringify({ requesterId: `/api/users/${myUserId}`, receiverId: `/api/users/${targetId}` })
                 });
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 setFriendship(data);
-                setAlert({ type: 'success', message: 'Demande d\'amitié envoyée !' });
+                setAlert({ type: 'success', message: 'Ami ajouté !' });
             } catch { setAlert({ type: 'error', message: 'Impossible d\'envoyer la demande.' }); }
         }
 

@@ -21,7 +21,7 @@ use App\Controller\Api\Event\UpdateEventController;
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['event:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['event:list']]),
         new Get(normalizationContext: ['groups' => ['event:read']]),
         new Post(
             controller: CreateEventController::class,
@@ -44,50 +44,50 @@ class Events
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['event:read'])]
+    #[Groups(['event:list', 'event:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'blob', nullable: true)]
     private $coverPhoto;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $gallery = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $Date = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $location = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read'])]
+    #[Groups(['event:list', 'event:read'])]
     private ?string $ratingAverage = null;
 
     #[ORM\Column]
-    #[Groups(['event:read'])]
+    #[Groups(['event:list', 'event:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?string $organisateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:list', 'event:read', 'event:write'])]
     private ?Region $regionID = null;
 
     /**
@@ -178,7 +178,7 @@ class Events
         return $this;
     }
 
-    #[Groups(['event:read'])]
+    #[Groups(['event:list', 'event:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->coverPhoto) {

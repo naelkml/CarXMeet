@@ -16,9 +16,11 @@
                 <a href="{{ path('app_garage') }}" style="font-size: 14px; text-decoration: none; color: #111827;">
                     Retour garage
                 </a>
-                <a href="{{ path('app_garage_vehicle_edit', { id: vehicle.id }) }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
-                    Modifier
-                </a>
+                {% if isOwner %}
+                    <a href="{{ path('app_garage_vehicle_edit', { id: vehicle.id }) }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
+                        Modifier
+                    </a>
+                {% endif %}
             </div>
         </header>
 

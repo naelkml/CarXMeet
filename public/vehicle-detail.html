@@ -18,6 +18,18 @@
     function getToken() { return localStorage.getItem('jwt_token'); }
     function authHeaders() { return { 'Authorization': 'Bearer ' + getToken() }; }
     function getVehicleIdFromUrl() { return new URLSearchParams(window.location.search).get('id'); }
+    function decodeToken() {
+        try {
+            const payload = JSON.parse(atob(getToken().split('.')[1]));
+            return { username: payload.username || payload.sub };
+        } catch { return null; }
+    }
+    function iriToId(iri) {
+        if (!iri) return null;
+        if (typeof iri === 'object') return iri.id ?? null;
+        const parts = String(iri).split('/');
+        return parseInt(parts[parts.length - 1]) || null;
+    }
 
     function Lightbox({ src, onClose }) {
         useEffect(() => {
@@ -34,6 +46,7 @@
 
     function VehicleDetailPage() {
         const [vehicle, setVehicle] = useState(null);
+        const [myUserId, setMyUserId] = useState(null);
         const [loading, setLoading] = useState(true);
         const [lightbox, setLightbox] = useState(null);
         const [alert, setAlert] = useState(null);
@@ -42,6 +55,8 @@
         useEffect(() => {
             const token = getToken();
             if (!token) { window.location.href = '/connexion.html'; return; }
+            const decoded = decodeToken();
+            if (!decoded) { localStorage.removeItem('jwt_token'); window.location.href = '/connexion.html'; return; }
 
             fetch(`/api/vehicles/${vehicleId}`, { headers: authHeaders() })
                 .then(r => {
@@ -52,6 +67,15 @@
                 .then(data => { if (data) setVehicle(data); })
                 .catch(() => setAlert({ type: 'error', message: 'Impossible de charger le véhicule.' }))
                 .finally(() => setLoading(false));
+
+            fetch(`/api/users?username=${decoded.username}`, { headers: authHeaders() })
+                .then(r => r.json())
+                .then(data => {
+                    const users = data['member'] ?? data['hydra:member'] ?? [];
+                    const me = users.find(u => u.username === decoded.username);
+                    if (me) setMyUserId(me.id);
+                })
+                .catch(() => {});
         }, [vehicleId]);
 
         if (loading) {
@@ -99,9 +123,11 @@
                             <a href="/garage.html" className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
                                 ← Mon garage
                             </a>
-                            <a href={`/vehicle-edit.html?id=${vehicle.id}`} className="btn-dark inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
-                                Modifier
-                            </a>
+                            {myUserId && iriToId(vehicle.userID) === myUserId && (
+                                <a href={`/vehicle-edit.html?id=${vehicle.id}`} className="btn-dark inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
+                                    Modifier
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>

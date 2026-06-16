@@ -105,7 +105,6 @@
         const [myUserId, setMyUserId]             = useState(null);
         const [myUsername, setMyUsername]         = useState('');
         const [roles, setRoles]                   = useState([]);
-        const [convoyMemberships, setConvoyMemberships] = useState([]);
         const [participants, setParticipants]     = useState([]);
         const [convoys, setConvoys]               = useState([]);
 
@@ -169,10 +168,15 @@
                             if (list.length > 0) { setMyRating(list[0]); setSelectedRating(list[0].rating); }
                         });
 
-                    // Amitiés
-                    fetch(`/api/friendships?requesterId=${me.id}`, { headers: { 'Authorization': 'Bearer ' + token } })
-                        .then(r => r.json())
-                        .then(d => setFriendships(d['member'] || d['hydra:member'] || []));
+                    // Amitiés (les deux sens : je suis requester OU receiver)
+                    Promise.all([
+                        fetch(`/api/friendships?requesterId=${me.id}`, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }).then(r => r.json()),
+                        fetch(`/api/friendships?receiverId=${me.id}`,  { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }).then(r => r.json()),
+                    ]).then(([d1, d2]) => {
+                        const l1 = d1['member'] ?? d1['hydra:member'] ?? [];
+                        const l2 = d2['member'] ?? d2['hydra:member'] ?? [];
+                        setFriendships([...l1, ...l2]);
+                    }).catch(() => {});
 
                     // Participants de l'événement
                     fetch(`/api/participations?eventID=${eventId}`, { headers: { 'Authorization': 'Bearer ' + token } })
@@ -184,11 +188,6 @@
                         .then(r => r.json())
                         .then(d => setConvoys(d['member'] || d['hydra:member'] || []));
                 });
-
-            // 3 — Convoy memberships
-            fetch('/api/convoy_participations', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(r => r.json())
-                .then(d => setConvoyMemberships(d['member'] || d['hydra:member'] || []));
 
         }, [eventId]);
 
@@ -212,18 +211,18 @@
         }
 
         function isConvoyMember(convoyId) {
-            return convoyMemberships.some(m => {
-                const cid = typeof m.convoyID === 'object' ? m.convoyID?.id : m.convoyID;
+            const convoy = convoys.find(c => c.id === convoyId);
+            return (convoy?.memberships || []).some(m => {
                 const uid = typeof m.userID === 'object' ? m.userID?.id : m.userID;
-                return cid === convoyId && uid === myUserId;
+                return uid === myUserId;
             });
         }
 
         function getConvoyMembershipId(convoyId) {
-            const m = convoyMemberships.find(m => {
-                const cid = typeof m.convoyID === 'object' ? m.convoyID?.id : m.convoyID;
+            const convoy = convoys.find(c => c.id === convoyId);
+            const m = (convoy?.memberships || []).find(m => {
                 const uid = typeof m.userID === 'object' ? m.userID?.id : m.userID;
-                return cid === convoyId && uid === myUserId;
+                return uid === myUserId;
             });
             return m?.id;
         }
@@ -302,14 +301,13 @@
                     body: JSON.stringify({
                         requesterId: `/api/users/${myUserId}`,
                         receiverId: `/api/users/${userId}`,
-                        status: 'pending'
                     })
                 });
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 setFriendships(prev => [...prev, data]);
-                setAlert({ type: 'success', message: 'Demande d\'amitié envoyée !' });
-            } catch { setAlert({ type: 'error', message: 'Impossible d\'envoyer la demande.' }); }
+                setAlert({ type: 'success', message: 'Ami ajouté !' });
+            } catch { setAlert({ type: 'error', message: 'Impossible d\'ajouter cet ami.' }); }
         }
 
         async function handleRemoveFriend(userId) {
@@ -337,9 +335,12 @@
                 });
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                setConvoyMemberships(prev => [...prev, data]);
+                setConvoys(prev => prev.map(c =>
+                    c.id === convoyId
+                        ? { ...c, memberships: [...(c.memberships || []), data] }
+                        : c
+                ));
                 setAlert({ type: 'success', message: 'Tu as rejoint le convoi !' });
-                refreshConvoys();
             } catch { setAlert({ type: 'error', message: 'Impossible de rejoindre le convoi.' }); }
         }
 
@@ -349,9 +350,12 @@
             if (!membershipId) return;
             try {
                 await fetch(`/api/convoy_participations/${membershipId}`, { method: 'DELETE', headers: authHeaders() });
-                setConvoyMemberships(prev => prev.filter(m => m.id !== membershipId));
+                setConvoys(prev => prev.map(c =>
+                    c.id === convoyId
+                        ? { ...c, memberships: (c.memberships || []).filter(m => m.id !== membershipId) }
+                        : c
+                ));
                 setAlert({ type: 'success', message: 'Tu as quitté le convoi.' });
-                refreshConvoys();
             } catch { setAlert({ type: 'error', message: 'Impossible de quitter le convoi.' }); }
         }
 

@@ -45,8 +45,8 @@ class Friendship
     private ?User $receiverId = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['friendship:read', 'friendship:write'])]
-    private ?string $status = null;
+    #[Groups(['friendship:read'])]
+    private ?string $status = 'accepted';
 
     public function getId(): ?int
     {

@@ -151,7 +151,7 @@
                 ? `/api/events?regionID=${regionId}`
                 : `/api/events`;
 
-            fetch(url, { headers: authHeaders() })
+            fetch(url, { headers: { ...authHeaders(), 'Accept': 'application/json' } })
                 .then(res => {
                     if (res.status === 401) {
                         localStorage.removeItem('jwt_token');
@@ -163,7 +163,8 @@
                 })
                 .then(data => {
                     if (!data) return;
-                    setEvents(data['member'] || data['hydra:member'] || []);
+                    const list = data['member'] ?? data['hydra:member'] ?? data;
+                    setEvents(Array.isArray(list) ? list : []);
                 })
                 .catch(() => setError('Impossible de charger les événements. Réessaie plus tard.'))
                 .finally(() => setLoading(false));

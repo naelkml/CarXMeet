@@ -36,7 +36,7 @@ class ConvoyParticipation
 
     #[ORM\ManyToOne(inversedBy: 'memberships')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['convoy_participation:read', 'convoy_participation:write'])]
+    #[Groups(['convoy_participation:write'])]
     private ?Convoy $convoyID = null;
 
     #[ORM\ManyToOne]

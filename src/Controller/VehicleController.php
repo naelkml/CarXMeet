@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Entity\VehiclePhoto;
 use App\Form\VehicleType;
+use App\Repository\FriendshipRepository;
 use App\Repository\VehicleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -78,7 +79,7 @@ final class VehicleController extends AbstractController
     }
 
     #[Route('/garage/{id}', name: 'app_garage_vehicle_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function show(Vehicle $vehicle): Response
+    public function show(Vehicle $vehicle, FriendshipRepository $friendshipRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -87,12 +88,17 @@ final class VehicleController extends AbstractController
             return $this->redirectToRoute('security.login');
         }
 
-        if ($vehicle->getUserID()?->getId() !== $user->getId()) {
+        $owner = $vehicle->getUserID();
+        $isOwner = $owner?->getId() === $user->getId();
+        $isFriend = $owner instanceof User && $friendshipRepository->areFriends($user, $owner);
+
+        if (!$isOwner && !$isFriend) {
             throw $this->createAccessDeniedException('Ce véhicule ne vous appartient pas.');
         }
 
         return $this->render('vehicle/show.html.twig', [
             'vehicle' => $vehicle,
+            'isOwner' => $isOwner,
         ]);
     }
 

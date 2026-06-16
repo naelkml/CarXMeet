@@ -64,9 +64,12 @@
                     return Promise.all([
                         fetch('/api/users', { headers: authHeaders() }).then(r => r.json()),
                         fetch(`/api/friendships?requesterId=${me.id}`, { headers: authHeaders() }).then(r => r.json()),
-                    ]).then(([usersData, friendsData]) => {
-                        setUsers(usersData['member'] || usersData['hydra:member'] || []);
-                        setFriendships(friendsData['member'] || friendsData['hydra:member'] || []);
+                        fetch(`/api/friendships?receiverId=${me.id}`,  { headers: authHeaders() }).then(r => r.json()),
+                    ]).then(([usersData, friendsData1, friendsData2]) => {
+                        setUsers(usersData['member'] ?? usersData['hydra:member'] ?? []);
+                        const l1 = friendsData1['member'] ?? friendsData1['hydra:member'] ?? [];
+                        const l2 = friendsData2['member'] ?? friendsData2['hydra:member'] ?? [];
+                        setFriendships([...l1, ...l2]);
                     });
                 })
                 .catch(() => setAlert({ type: 'error', message: 'Impossible de charger les utilisateurs.' }))
@@ -76,7 +79,8 @@
         function getFriendship(userId) {
             return friendships.find(f => {
                 const rid = typeof f.receiverId === 'object' ? f.receiverId?.id : f.receiverId;
-                return rid === userId;
+                const req = typeof f.requesterId === 'object' ? f.requesterId?.id : f.requesterId;
+                return rid === userId || req === userId;
             });
         }
 
@@ -89,13 +93,12 @@
                     body: JSON.stringify({
                         requesterId: `/api/users/${myUserId}`,
                         receiverId: `/api/users/${userId}`,
-                        status: 'pending'
                     })
                 });
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 setFriendships(prev => [...prev, data]);
-                setAlert({ type: 'success', message: 'Demande d\'amitié envoyée !' });
+                setAlert({ type: 'success', message: 'Ami ajouté !' });
             } catch { setAlert({ type: 'error', message: 'Impossible d\'envoyer la demande.' }); }
         }
 
@@ -147,8 +150,8 @@
                             {users.map(u => {
                                 const isMe = u.id === myUserId;
                                 const friendship = getFriendship(u.id);
-                                const isFriend = friendship?.status === 'accepted';
-                                const isPending = friendship?.status === 'pending';
+                                const isFriend = !!friendship;
+                                const isPending = false;
                                 return (
                                     <div key={u.id} className="inner-card rounded-xl p-3" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                         <Avatar user={u} size={44} />

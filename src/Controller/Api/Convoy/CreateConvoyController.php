@@ -38,12 +38,23 @@ final class CreateConvoyController extends AbstractController
         $payload = $this->decodePayload($request);
 
         $eventRaw = $payload['eventID'] ?? null;
-        if (!is_string($eventRaw)) {
+        if ($eventRaw === null) {
             throw new BadRequestHttpException('L\'événement est obligatoire.');
         }
 
-        $eventId = FormDataHelper::resolveIriId($eventRaw);
-        $event = $eventId ? $this->em->getRepository(Events::class)->find($eventId) : null;
+        if (is_int($eventRaw)) {
+            $eventId = $eventRaw;
+        } elseif (is_string($eventRaw)) {
+            $eventId = FormDataHelper::resolveIriId(trim($eventRaw));
+        } else {
+            $eventId = null;
+        }
+
+        if (!$eventId) {
+            throw new BadRequestHttpException('L\'événement est obligatoire.');
+        }
+
+        $event = $this->em->getRepository(Events::class)->find($eventId);
         if (!$event) {
             throw new NotFoundHttpException('Événement introuvable.');
         }
