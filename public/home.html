@@ -151,7 +151,7 @@
                 {/* Header */}
                 <div className="text-center mb-8 pt-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white-header">La communauté des passionnés de voitures</p>
                 </div>
 
                 {/* Topbar */}
@@ -164,8 +164,8 @@
                             <div>
                                 <h2 className="text-white font-bold text-lg m-0">Accueil</h2>
                                 {user ? (
-                                    <p className="text-gray-400 text-xs mt-0.5 m-0">
-                                        Connecté en tant que <strong className="text-gray-200">{user.username}</strong>
+                                    <p className="text-white-small">
+                                        Connecté en tant que <strong className="text-white-200">{user.username}</strong>
                                     </p>
                                 ) : (
                                     <div className="skeleton" style={{ height: 14, width: 160, borderRadius: 6, marginTop: 4 }} />

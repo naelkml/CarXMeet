@@ -55,11 +55,14 @@ final class CreateVehicleController extends AbstractController
         $vehicle->setDescription(FormDataHelper::getString($request, 'description'));
 
         $cover = FormDataHelper::getUploadedFiles($request, 'coverPhoto')[0] ?? null;
-        if ($cover) {
+        if ($cover && $cover->isValid()) {
             $vehicle->setPhotos(file_get_contents($cover->getPathname()));
         }
 
-        $uploads = FormDataHelper::getUploadedFiles($request, 'galleryPhotos');
+        $uploads = array_filter(
+            FormDataHelper::getUploadedFiles($request, 'galleryPhotos'),
+            static fn ($f) => $f->isValid()
+        );
         if (count($uploads) > 5) {
             throw new BadRequestHttpException('Galerie: 5 photos maximum.');
         }

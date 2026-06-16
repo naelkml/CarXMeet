@@ -22,7 +22,7 @@ use App\Controller\Api\User\UpdateUserController;
 # [ORM\EntityListeners('App\EventListener\UserListener')]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['user:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['user:read']], paginationEnabled: false),
         new Get(normalizationContext: ['groups' => ['user:read']]),
         new Patch(
             controller: UpdateUserController::class,

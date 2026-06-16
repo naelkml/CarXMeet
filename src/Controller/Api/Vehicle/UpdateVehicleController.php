@@ -49,13 +49,16 @@ final class UpdateVehicleController extends AbstractController
         }
 
         $cover = FormDataHelper::getUploadedFiles($request, 'coverPhoto')[0] ?? null;
-        if ($cover) {
+        if ($cover && $cover->isValid()) {
             $vehicle->setPhotos(file_get_contents($cover->getPathname()));
         }
 
         $existingCount = $vehicle->getGalleryPhotos()->count();
         $remaining = max(0, 5 - $existingCount);
-        $uploads = FormDataHelper::getUploadedFiles($request, 'galleryPhotos');
+        $uploads = array_filter(
+            FormDataHelper::getUploadedFiles($request, 'galleryPhotos'),
+            static fn ($f) => $f->isValid()
+        );
         if (count($uploads) > $remaining) {
             throw new BadRequestHttpException(sprintf('Galerie: %d photo(s) maximum supplémentaire(s).', $remaining));
         }
