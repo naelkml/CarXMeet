@@ -1,0 +1,41 @@
+.map-wrap {
+    position: relative;
+}
+
+.region-point {
+    position: absolute;
+    display: block;
+    text-decoration: none;
+    z-index: 2;
+}
+
+.region-point-dot {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 4px rgb(29 78 216);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.region-point:hover .region-point-dot {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 6px rgb(29 78 216);
+}
+
+.region-point-tooltip {
+    position: absolute;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1d4ed8;
+    color: #fff;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
