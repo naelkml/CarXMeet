@@ -6,7 +6,7 @@
     <title>CarXMeet — Événements</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./styles/events.css" />
 </head>
@@ -43,7 +43,7 @@
         return (
             <span style={{ color: '#fbbf24', fontSize: 13 }}>
                 {'★'.repeat(Math.round(v))}{'☆'.repeat(5 - Math.round(v))}
-                <span style={{ color: '#9ca3af', marginLeft: 4 }}>{v.toFixed(1)}/5</span>
+                <span style={{ color: '#ffffff', marginLeft: 4 }}>{v.toFixed(1)}/5</span>
             </span>
         );
     }
@@ -66,7 +66,7 @@
                             decoding="async"
                         />
                     ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: '#6b7280', fontSize: 12 }}>
+                        <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: '#ffffff', fontSize: 12 }}>
                             📷
                         </div>
                     )}
@@ -77,10 +77,10 @@
                     <a href={`/event-detail.html?id=${event.id}`} style={{ textDecoration: 'none' }}>
                         <h2 className="text-white font-bold" style={{ margin: 0, fontSize: 17 }}>{event.title}</h2>
                     </a>
-                    <div style={{ marginTop: 5, fontSize: 13, color: '#9ca3af' }}>
+                    <div style={{ marginTop: 5, fontSize: 13, color: '#ffffff' }}>
                         {[event.Date, event.location, event.type, regionName].filter(Boolean).join(' · ')}
                     </div>
-                    <p style={{ margin: '8px 0 0', color: '#d1d5db', fontSize: 14, lineHeight: 1.5 }}>
+                    <p style={{ margin: '8px 0 0', color: '#ffffff', fontSize: 14, lineHeight: 1.5 }}>
                         {shortDesc}
                     </p>
                     <div style={{ marginTop: 8 }}>
@@ -93,7 +93,7 @@
                     <a
                         href={`/event-detail.html?id=${event.id}`}
                         className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium"
-                        style={{ textDecoration: 'none' }}
+                        style={{ textDecoration: 'color: #ffffff' }}
                     >
                         Voir
                     </a>
@@ -190,7 +190,7 @@
                 {/* Header logo */}
                 <div className="text-center mb-8 pt-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white text-sm">La communauté des passionnés de voitures</p>
                 </div>
 
                 {/* Topbar */}
@@ -201,7 +201,7 @@
                         <div>
                             <h2 className="text-white font-bold text-lg m-0">Événements</h2>
                             {region && (
-                                <p className="text-gray-400 text-xs m-0 mt-1">
+                                <p className="text-white text-xs m-0 mt-1">
                                     Région : <strong className="text-gray-200">{region.name}</strong>
                                 </p>
                             )}

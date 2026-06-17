@@ -1,0 +1,33 @@
+{
+  "name": "carxmeet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naelkml/CarXMeet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/naelkml/CarXMeet/issues"
+  },
+  "homepage": "https://github.com/naelkml/CarXMeet#readme",
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "babel-loader": "^10.1.1"
+  },
+  "dependencies": {
+    "core-js": "^3.49.0",
+    "regenerator-runtime": "^0.14.1"
+  }
+}

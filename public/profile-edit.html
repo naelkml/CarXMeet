@@ -6,7 +6,7 @@
     <title>CarXMeet — Mon profil</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./styles/profile-edit.css" />
 </head>
@@ -126,7 +126,7 @@
             <div className="w-full max-w-lg mx-auto">
                 <div className="text-center mb-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white-header text-sm">La communauté des passionnés de voitures</p>
                 </div>
 
                 <div className="card rounded-2xl p-6 shadow-2xl">
@@ -161,11 +161,11 @@
 
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                            <Field label="Prénom" id="firstName" field="firstName" placeholder="Nael" />
-                            <Field label="Nom" id="lastName" field="lastName" placeholder="Khamallah" />
+                            <Field label="Prénom" id="firstName" field="firstName" placeholder="Prénom" />
+                            <Field label="Nom" id="lastName" field="lastName" placeholder="Nom" />
                         </div>
-                        <Field label="Nom d'utilisateur" id="username" field="username" placeholder="nael_kml" />
-                        <Field label="Email" id="email" type="email" field="email" placeholder="nael@carxmeet.fr" />
+                        <Field label="Nom d'utilisateur" id="username" field="username" placeholder="nom d'utilisateur" />
+                        <Field label="Email" id="email" type="email" field="email" placeholder="exemple@exemple.fr" />
                         <Field label="Téléphone" id="phone" type="tel" field="phone" placeholder="+33 6 00 00 00 00" />
 
                         <div style={{ marginTop: 8 }}>

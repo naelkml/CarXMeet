@@ -6,7 +6,7 @@
     <title>CarXMeet — Utilisateurs</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./styles/users.css" />
 </head>
@@ -122,7 +122,7 @@
             <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-6 pt-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white-header text-sm">La communauté des passionnés de voitures</p>
                 </div>
 
                 <div className="card rounded-2xl p-5 shadow-2xl">
@@ -180,7 +180,7 @@
                                             <a href={`/user-profile.html?id=${u.id}`} className="text-white font-semibold text-sm" style={{ textDecoration: 'none' }}>
                                                 {u.username}
                                             </a>
-                                            <div style={{ fontSize: 12, color: '#9ca3af' }}>{u.firstName} {u.lastName}</div>
+                                            <div style={{ fontSize: 12, color: '#ffffff' }}>{u.firstName} {u.lastName}</div>
                                         </div>
                                         {!isMe && (
                                             isFriend ? (
@@ -188,7 +188,7 @@
                                                     Retirer
                                                 </button>
                                             ) : isPending ? (
-                                                <span style={{ fontSize: 12, color: '#9ca3af' }}>En attente</span>
+                                                <span style={{ fontSize: 12, color: '#ffffff' }}>En attente</span>
                                             ) : (
                                                 <button onClick={() => handleAdd(u.id)} className="btn-dark px-3 py-1 rounded-xl text-xs font-medium">
                                                     Ajouter en ami

@@ -1,4 +1,4 @@
-body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 100vh; }
+body { background: url('../images/friends.jpg') center/cover no-repeat fixed; min-height: 100vh; }
 .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
 .inner-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
 .logo-text { background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -8,4 +8,17 @@ body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height
 .btn-danger:hover { background: rgba(239,68,68,0.25); transform: translateY(-1px); }
 .avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; overflow: hidden; border-radius: 50%; flex-shrink: 0; }
 .skeleton { background: rgba(255,255,255,0.07); border-radius: 12px; animation: pulse 1.5s infinite; }
+.text-white-small {
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    margin: 0;
+    color: #fff;
+}
+
+.text-white-header {
+    font-size: 1rem;
+    margin-top: 0.125rem;
+    margin: 0;
+    color: #fff;
+}
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
