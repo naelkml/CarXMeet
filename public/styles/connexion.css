@@ -1,8 +1,6 @@
 /* Arrière-plan */
-body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-    min-height: 100vh;
-}
+body { background: url('../images/connexion.jpg') center/cover no-repeat fixed; min-height: 100vh; }
+
 
 /* Layout principal */
 .page-container {
@@ -157,7 +155,7 @@ body {
 /* Lien inscription */
 .register-text {
     text-align: center;
-    color: #9ca3af;
+    color: #ffffff;
     font-size: 0.875rem;
     margin-top: 1rem;
 }
@@ -217,4 +215,18 @@ body {
 
 .alert-message {
     font-size: 0.875rem;
+}
+
+.text-white-header {
+    font-size: 1rem;
+    margin-top: 0.125rem;
+    margin: 0;
+    color: #fff;
+}
+
+.text-white-small {
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    margin: 0;
+    color: #fff;
 }

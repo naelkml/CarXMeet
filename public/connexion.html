@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CarXMeet — Connexion</title>
-
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./styles/connexion.css">
-
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
@@ -155,7 +154,7 @@
                     {/* HEADER */}
                     <div className="header">
                         <h1 className="logo-text">CarXMeet</h1>
-                        <p className="subtitle">
+                        <p className="text-white-header">
                             La communauté des passionnés de voitures
                         </p>
                     </div>
@@ -181,7 +180,7 @@
                                         setUsername(v);
                                         setFieldErrors(e => ({ ...e, username: false }));
                                     }}
-                                    placeholder="nael_kml"
+                                    placeholder="Nom d'utilisateur"
                                     hasError={fieldErrors.username}
                                 />
 
