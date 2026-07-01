@@ -82,9 +82,9 @@ class Events
     #[Groups(['event:list', 'event:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['event:list', 'event:read', 'event:write'])]
-    private ?string $organisateur = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $organisateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[Groups(['event:list', 'event:read', 'event:write'])]
@@ -155,14 +155,15 @@ class Events
         return $this;
     }
 
-    public function getOrganisateur(): ?string
+
+    public function getOrganisateur(): ?User
     {
         return $this->organisateur;
     }
 
-    public function setOrganisateur(string $organisateur): static
+    public function setOrganisateur(?User $user): self
     {
-        $this->organisateur = $organisateur;
+        $this->organisateur = $user;
         return $this;
     }
 

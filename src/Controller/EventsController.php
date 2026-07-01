@@ -186,12 +186,13 @@ final class EventsController extends AbstractController
     #[Route('/events/new', name: 'app_events_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_EVENT_MANAGER');
 
         $event = new Events();
         $event->setCreatedAt(new \DateTimeImmutable());
         $event->setRatingAverage('0');
         $event->setGallery(null);
+        $user = $this->getUser();
+        $event->setOrganisateur($this->getUser());
 
         $form = $this->createForm(EventsType::class, $event);
         $form->handleRequest($request);
@@ -240,7 +241,14 @@ final class EventsController extends AbstractController
     #[Route('/events/{id}/edit', name: 'app_events_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
     public function edit(Request $request, Events $event, EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_EVENT_MANAGER');
+        $user = $this->getUser();
+
+        if (
+            !$this->isGranted('ROLE_EVENT_MANAGER') &&
+            $event->getOrganisateur()?->getId() !== $user->getId()
+        ) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
 
         $form = $this->createForm(EventsType::class, $event);
         $form->handleRequest($request);

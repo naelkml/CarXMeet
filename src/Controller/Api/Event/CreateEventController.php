@@ -39,7 +39,7 @@ final class CreateEventController extends AbstractController
         $event->setType(FormDataHelper::getString($request, 'type') ?? '');
         $event->setDate(FormDataHelper::getString($request, 'Date') ?? '');
         $event->setLocation(FormDataHelper::getString($request, 'location') ?? '');
-        $event->setOrganisateur(FormDataHelper::getString($request, 'organisateur') ?? '');
+        $event->setOrganisateur($this->getUser());
         $event->setCreatedAt(new \DateTimeImmutable());
         $event->setRatingAverage('0');
         $event->setGallery(null);

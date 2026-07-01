@@ -16,6 +16,7 @@
 <script type="text/babel">
     const { useState, useEffect } = React;
 
+
     // ─── Utilitaires ──────────────────────────────────────────────────────────
     function getToken() { return localStorage.getItem('jwt_token'); }
     function authHeaders(extra = {}) {
@@ -399,13 +400,16 @@
 
         const photos = (event.galleryPhotos || []).filter(p => p.imageBase64);
         const regionId = event.regionID?.id;
+        const canEdit =
+            roles.includes('ROLE_EVENT_MANAGER') ||
+            event?.organisateur === myUsername;
 
         return (
             <div className="max-w-4xl mx-auto">
                 {/* Logo */}
                 <div className="text-center mb-6 pt-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white text-sm">La communauté des passionnés de voitures</p>
                 </div>
 
                 {alert && <AlertBox type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
@@ -425,12 +429,23 @@
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+
+                            {canEdit && (
+                                <a
+                                    href={`/event-edit.html?id=${eventId}`}
+                                    className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium"
+                                    style={{ textDecoration: 'none' }}
+                                >
+                                    Modifier l’événement
+                                </a>
+                            )}
+
                             <a
-                                href={regionId ? `/events.html?region=${regionId}` : '/events.html'}
+                                href="/home.html"
                                 className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium"
                                 style={{ textDecoration: 'none' }}
                             >
-                                ← Retour liste
+                                Retour accueil
                             </a>
                         </div>
                     </div>
