@@ -1,11 +1,132 @@
 {% extends "base.html.twig" %}
 
-{% block title %}Vérification Email{% endblock %}
+{% block title %}Email vérifié - CarXMeet{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1>Adresse email vérifiée</h1>
-        <p class="mb-3">Ton compte est maintenant activé. Tu peux te connecter.</p>
-        <a href="{{ path('security.login') }}" class="btn btn-primary">Se connecter</a>
+<head><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+    <div class="page-container">
+
+        <div class="form-container">
+
+            <div class="header">
+                <h1 class="logo-text">CarXMeet</h1>
+                <p class="subtitle">Vérification de compte</p>
+            </div>
+
+            <div class="card text-center">
+
+                <h2 class="card-title">Email vérifié</h2>
+
+                <p class="text-white-small">
+                    Ton compte est maintenant activé.<br>
+                    Tu peux maintenant te connecter et rejoindre la communauté CarXMeet.
+                </p>
+
+                <div style="margin-top: 2rem;">
+                    <a href="/connexion.html" class="btn-primary">
+                        Se connecter
+                    </a>
+                </div>
+
+            </div>
+
+            <p class="register-text">
+                Bienvenue dans CarXMeet !
+            </p>
+
+        </div>
+
     </div>
+
+    <style>
+        /* Background */
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 100vh; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;}
+
+        /* Layout */
+        .page-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 28rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.25rem;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            color: #ffffff;
+            font-size: 0.875rem;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+            text-align: center;
+        }
+
+        .card-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        /* Text */
+        .text-white-small {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+        }
+
+        /* Button */
+        .btn-primary {
+            display: inline-block;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        /* Footer text */
+        .register-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+    </style>
+
 {% endblock %}

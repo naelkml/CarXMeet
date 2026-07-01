@@ -54,13 +54,6 @@
                     <div className="text-white font-medium text-sm">{user?.username || '…'}</div>
                     <div style={{ fontSize: 12, color: '#9ca3af' }}>{user?.firstName} {user?.lastName}</div>
                 </div>
-                {!isMe && (
-                    isFriend
-                        ? <button onClick={onRemoveFriend} className="btn-danger px-3 py-1 rounded-xl text-xs font-medium">Retirer</button>
-                        : isPending
-                            ? <span style={{ fontSize: 12, color: '#9ca3af' }}>Demande envoyée</span>
-                            : <button onClick={onAddFriend} className="btn-dark px-3 py-1 rounded-xl text-xs font-medium">Ajouter en ami</button>
-                )}
                 {isMe && <span style={{ fontSize: 12, color: '#9ca3af' }}>Moi</span>}
             </div>
         );

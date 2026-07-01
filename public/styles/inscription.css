@@ -1,4 +1,4 @@
-body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 100vh; }
+body { background: url('../images/inscription.jpg') center/cover no-repeat fixed; min-height: 100vh; }
 .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
 .input-field { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
 .input-field::placeholder { color: rgba(255,255,255,0.4); }
@@ -9,3 +9,9 @@ body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 .social-prefix { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-right: none; color: rgba(255,255,255,0.6); }
 .logo-text { background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.text-white-header {
+    font-size: 1rem;
+    margin-top: 0.125rem;
+    margin: 0;
+    color: #fff;
+}
