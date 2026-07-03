@@ -84,11 +84,7 @@
         );
     }
 
-    /* ───────────────── Positions des points sur la carte (en %) ─────────────────
-       ⚠️ À CALIBRER avec ta vraie image "carte.png".
-       Ce sont des positions approximatives pour une silhouette classique de la France.
-       Ajuste top/left de quelques % si un point ne tombe pas pile sur sa région.
-    */
+    /* ───────────────── La carte ─────────────────*/
     const REGION_POSITIONS = {
         'ile-de-france':              { x: 52.1, y: 29.7 },
         'centre-val-de-loire':        { x: 47.5, y: 40.0 },
@@ -103,25 +99,27 @@
         'auvergne-rhone-alpes':       { x: 64.0, y: 57.3 },
         'provence-alpes-cote-d-azur': { x: 73.9, y: 70.3 },
         'corse':                      { x: 92.0, y: 85.3 },
+        'guadeloupe':                 { x: 1.0, y: 90 },
+        'mayotte':                    { x: 1.0, y: 85 },
+        'la-reunion':                 { x: 1.0, y: 80 },
     };
 
-    /* Slugifie un nom de région pour le matching ("Île-de-France" -> "ile-de-france",
-       "Provence-Alpes-Côte d'Azur" -> "provence-alpes-cote-d-azur") */
+    /* Refactorisation des noms */
     function normalizeRegionName(str) {
         return (str || '')
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')   // enlève les accents
             .replace(/[^a-z0-9]+/g, '-')        // espaces/apostrophes/etc -> tiret
-            .replace(/^-+|-+$/g, '');           // trim des tirets en bord
+            .replace(/^-+|-+$/g, '');
     }
 
-    /* ───────────────── RegionPoint (un point cliquable) ───────────────── */
+    /* ───────────────── Region cliquable ───────────────── */
     function RegionPoint({ region }) {
         const [hovered, setHovered] = useState(false);
         const pos = REGION_POSITIONS[normalizeRegionName(region.name)];
 
-        // Si on ne connaît pas la position de cette région, on ne casse rien : on ne l'affiche pas.
+        // Si on ne connaît pas la position d'une région on  l'affiche pas.
         if (!pos) return null;
 
         return (
@@ -278,7 +276,7 @@
                         </div>
 
                         <div className="flex gap-2 flex-wrap">
-                            <NavButton href="/profile-edit.html" variant="dark">Profil</NavButton>
+                            <NavButton href="/profile-edit.html" variant="dark">Modifier mon profil</NavButton>
                             <NavButton href="/users.html">Utilisateurs</NavButton>
                             <NavButton href="/friends.html">Amis</NavButton>
                             <NavButton onClick={handleLogout} variant="danger">Déconnexion</NavButton>
@@ -290,9 +288,19 @@
                 {/* CARD REGION / MAP */}
                 <div className="card rounded-2xl p-6 shadow-2xl">
 
-                    <h3 className="text-white font-bold text-lg mb-4">
-                        {isMobile ? 'Régions' : 'Carte'}
-                    </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                        <h3 className="text-white font-bold text-lg">
+                            {isMobile ? 'Régions' : 'Carte'}
+                        </h3>
+
+                        <NavButton
+                            href={`/events.html?region=${14}`}
+                            variant="dark"
+                            className="w-full sm:w-auto"
+                        >
+                            Voir les événements internationaux
+                        </NavButton>
+                    </div>
 
                     {/* MOBILE */}
                     {isMobile ? (
