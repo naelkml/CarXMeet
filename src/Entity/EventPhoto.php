@@ -28,7 +28,7 @@ class EventPhoto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['event_photo:read'])]
+    #[Groups(['event_photo:read', 'event:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'galleryPhotos')]
@@ -40,7 +40,7 @@ class EventPhoto
     private $photo;
 
     #[ORM\Column]
-    #[Groups(['event_photo:read'])]
+    #[Groups(['event_photo:read', 'event:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
@@ -80,7 +80,7 @@ class EventPhoto
         return $this->createdAt;
     }
 
-    #[Groups(['event_photo:read'])]
+    #[Groups(['event_photo:read', 'event:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->photo) {

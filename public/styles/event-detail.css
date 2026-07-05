@@ -22,4 +22,99 @@ body { background: url('../images/events-details.jpg') center/cover no-repeat fi
 .thumb-img { height: 136px; }
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
+
+/* ─────────────────────────────
+   BOUTON AIDE
+───────────────────────────── */
+.btn-dark {
+    background: #111827;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.2s ease;
+}
+
+.btn-dark:hover {
+    background: #1f2937;
+}
+
+/* ─────────────────────────────
+   OVERLAY (fond noir)
+───────────────────────────── */
+.help-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+/* ─────────────────────────────
+   MODALE
+───────────────────────────── */
+.help-modal {
+    background: #111827;
+    padding: 20px;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 380px;
+    color: white;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: popIn 0.15s ease-out;
+}
+
+/* Animation légère */
+@keyframes popIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ─────────────────────────────
+   TEXTE DANS MODALE
+───────────────────────────── */
+.help-modal p {
+    font-size: 14px;
+    color: #d1d5db;
+    line-height: 1.5;
+}
+
+/* ─────────────────────────────
+   BOUTON FERMER
+───────────────────────────── */
+.btn-danger {
+    margin-top: 15px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    float: right;
+    transition: 0.2s ease;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* ─────────────────────────────
+   BONUS : amélioration boutons existants
+───────────────────────────── */
+.btn-outline {
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    transition: 0.2s ease;
+}
+
+.btn-outline:hover {
+    background: rgba(255,255,255,0.08);
+}
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
