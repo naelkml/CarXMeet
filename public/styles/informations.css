@@ -1,0 +1,144 @@
+body {
+    background: url('../images/rgpd.jpg') center/cover no-repeat fixed;
+    min-height: 100vh;
+    color: #e5e7eb;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* ===== CARD GLASS ===== */
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== LOGO ===== */
+.logo-text {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+}
+
+/* ===== TEXT ===== */
+.text-white-header {
+    font-size: 1rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.text-white-small {
+    font-size: 0.75rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== BUTTONS ===== */
+.btn-dark {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-dark:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #d1d5db;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.25);
+    transform: translateY(-2px);
+}
+
+/* ===== REGION CARD ===== */
+.region-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    transition: all 0.2s ease;
+}
+
+.region-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #3b82f6;
+    color: #ffffff;
+    transform: translateY(-3px);
+}
+
+/* ===== AVATAR ===== */
+.avatar {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* ===== SKELETON LOADING ===== */
+.skeleton {
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* ===== ANIMATION ===== */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* ===== GLOBAL IMPROVEMENTS ===== */
+a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #93c5fd;
+}

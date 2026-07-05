@@ -40,8 +40,31 @@ final class ApiRegistrationController extends AbstractController
         if (empty($data['username'])) $errors[] = 'Le nom d\'utilisateur est obligatoire';
         if (empty($data['phone'])) $errors[] = 'Le téléphone est obligatoire';
         if (empty($data['email'])) $errors[] = 'L\'email est obligatoire';
+        //Conditions mot de passe
         if (empty($data['password'])) $errors[] = 'Le mot de passe est obligatoire';
-        elseif (strlen($data['password']) < 8) $errors[] = 'Le mot de passe doit contenir au moins 8 caractères';
+        else {
+                if (strlen($data['password']) < 12) {
+                    $errors[] = 'Le mot de passe doit contenir au moins 12 caractères';
+                }
+
+                if (!preg_match('/[a-z]/', ($data['password']))) {
+                    $errors[] = "Ajoute au moins une lettre minuscule.";
+                }
+
+                if (!preg_match('/[A-Z]/', ($data['password']))) {
+                    $errors[] = "Ajoute au moins une lettre majuscule.";
+                }
+
+                if (!preg_match('/[0-9]/', ($data['password']))) {
+                    $errors[] = "Ajoute au moins un chiffre.";
+                }
+
+                if (!preg_match('/[^a-zA-Z0-9]/', ($data['password']))) {
+                    $errors[] = "Ajoute au moins un caractère spécial.";
+                }
+        }
+
+
 
         if ($errors) {
             return $this->json(['errors' => $errors], 422);
