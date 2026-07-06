@@ -115,13 +115,13 @@
                             <h2 className="text-white font-bold m-0" style={{ fontSize: 22 }}>
                                 {vehicle.brand} {vehicle.model} ({vehicle.year})
                             </h2>
-                            <div style={{ marginTop: 6, fontSize: 13, color: '#9ca3af' }}>
+                            <div style={{ marginTop: 6, fontSize: 13, color: '#ffffff' }}>
                                 {[vehicle.engine, vehicle.preparation].filter(Boolean).join(' · ')}
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
-                            <a href="/garage.html" className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
-                                ← Mon garage
+                            <a href="/home.html" className="btn-outline inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>
+                                ← Retour Acceuil
                             </a>
                             {myUserId && iriToId(vehicle.userID) === myUserId && (
                                 <a href={`/vehicle-edit.html?id=${vehicle.id}`} className="btn-dark inline-block px-3 py-2 rounded-xl text-sm font-medium" style={{ textDecoration: 'none' }}>

@@ -75,14 +75,40 @@
                         fetch(`/api/friendships?requesterId=${targetId}&receiverId=${me.id}`, { headers: authHeaders() }).then(r => r.json()),
                         fetch(`/api/vehicles?ownerID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
                         fetch(`/api/participations?userID=${targetId}`, { headers: authHeaders() }).then(r => r.json()).catch(() => ({ member: [] })),
-                    ]).then(([user, friendsData1, friendsData2, vehiclesData, eventsData]) => {
+                    ]).then(async ([user, friendsData1, friendsData2, vehiclesData, eventsData]) => {
                         setProfileUser(user);
+
                         const fList1 = friendsData1['member'] ?? friendsData1['hydra:member'] ?? [];
                         const fList2 = friendsData2['member'] ?? friendsData2['hydra:member'] ?? [];
                         const f = [...fList1, ...fList2][0] || null;
+
                         setFriendship(f);
                         setVehicles(vehiclesData['member'] ?? vehiclesData['hydra:member'] ?? []);
-                        setEvents(eventsData['member'] ?? eventsData['hydra:member'] ?? []);
+
+                        const participations = eventsData['member'] ?? eventsData['hydra:member'] ?? [];
+
+                        const loadedEvents = await Promise.all(
+                            participations.map(async (p) => {
+                                const eventUrl = typeof p.eventID === 'string'
+                                    ? p.eventID
+                                    : `/api/events/${p.eventID.id}`;
+
+                                const response = await fetch(eventUrl, {
+                                    headers: authHeaders()
+                                });
+
+                                if (!response.ok) return null;
+
+                                const event = await response.json();
+
+                                return {
+                                    participationId: p.id,
+                                    ...event
+                                };
+                            })
+                        );
+
+                        setEvents(loadedEvents.filter(Boolean));
                     });
                 })
                 .catch(() => setAlert({ type: 'error', message: 'Impossible de charger le profil.' }))
@@ -139,7 +165,7 @@
             <div className="max-w-2xl mx-auto">
                 <div className="text-center mb-6 pt-6">
                     <h1 className="text-4xl font-black logo-text mb-1">CarXMeet</h1>
-                    <p className="text-gray-400 text-sm">La communauté des passionnés de voitures</p>
+                    <p className="text-white text-sm">La communauté des passionnés de voitures</p>
                 </div>
 
                 {alert && (
@@ -165,7 +191,7 @@
                         <Avatar user={profileUser} size={80} />
                         <div style={{ textAlign: 'center' }}>
                             <div className="text-white font-bold" style={{ fontSize: 20 }}>{profileUser.username}</div>
-                            <div style={{ fontSize: 14, color: '#9ca3af', marginTop: 4 }}>{profileUser.firstName} {profileUser.lastName}</div>
+                            <div style={{ fontSize: 14, color: '#ffffff', marginTop: 4 }}>{profileUser.firstName} {profileUser.lastName}</div>
                         </div>
 
                         {!isMe && (
@@ -227,20 +253,21 @@
                     {canSeePrivate ? (
                         events.length > 0 ? (
                             <div style={{ display: 'grid', gap: 10 }}>
-                                {events.map(p => {
-                                    const ev = typeof p.eventID === 'object' ? p.eventID : null;
-                                    if (!ev) return null;
-                                    return (
-                                        <a key={p.id} href={`/event-detail.html?id=${ev.id}`} style={{ textDecoration: 'none' }}>
-                                            <div className="inner-card rounded-xl p-3">
-                                                <div className="text-white font-bold text-sm">{ev.title}</div>
-                                                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
-                                                    {[ev.Date, ev.location, ev.type].filter(Boolean).join(' · ')}
-                                                </div>
+                                {events.map((ev) => (
+                                    <a
+                                        key={ev.participationId}
+                                        href={`/event-detail.html?id=${ev.id}`}
+                                        style={{ textDecoration: 'none' }}
+                                    >
+                                        <div className="inner-card rounded-xl p-3">
+                                            <div className="text-white font-bold text-sm">{ev.title}</div>
+
+                                            <div style={{ fontSize: 12, color: '#ffffff', marginTop: 4 }}>
+                                                {[ev.date, ev.location, ev.type].filter(Boolean).join(' · ')}
                                             </div>
-                                        </a>
-                                    );
-                                })}
+                                        </div>
+                                    </a>
+                                ))}
                             </div>
                         ) : (
                             <div style={{ padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12, color: '#9ca3af', fontSize: 14 }}>

@@ -28,7 +28,7 @@ class VehiclePhoto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['vehicle_photo:read'])]
+    #[Groups(['vehicle_photo:read','user:read','vehicle:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'galleryPhotos')]
@@ -80,7 +80,7 @@ class VehiclePhoto
         return $this->createdAt;
     }
 
-    #[Groups(['vehicle_photo:read'])]
+    #[Groups(['vehicle_photo:read','user:read','vehicle:read'])]
     public function getImageBase64(): ?string
     {
         if (!$this->photo) {
