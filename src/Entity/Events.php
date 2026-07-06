@@ -93,15 +93,24 @@ class Events
     /**
      * @var Collection<int, Convoy>
      */
-    #[ORM\OneToMany(targetEntity: Convoy::class, mappedBy: 'eventID')]
+    #[ORM\OneToMany(
+        targetEntity: Convoy::class,
+        mappedBy: 'eventID',
+        cascade: ['remove'],
+        orphanRemoval: true
+    )]
     #[Groups(['event:read'])]
     private Collection $convoys;
 
     /**
      * @var Collection<int, Participation>
      */
-    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'eventID')]
-    #[Groups(['event:read'])]
+    #[ORM\OneToMany(
+        targetEntity: Participation::class,
+        mappedBy: 'eventID',
+        cascade: ['remove'],
+        orphanRemoval: true
+    )]    #[Groups(['event:read'])]
     private Collection $participations;
 
     /**

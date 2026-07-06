@@ -197,6 +197,7 @@
             });
         }
 
+
         function isFriendWith(userId) {
             return friendshipWith(userId)?.status === 'accepted';
         }
@@ -375,6 +376,24 @@
                 .catch(() => {});
         }
 
+        async function handleDeleteEvent() {
+            if (!confirm(`Supprimer définitivement l’événement "${event.title}" ?`)) return;
+
+            const res = await fetch(`/api/events/${eventId}`, {
+                method: 'DELETE',
+                headers: authHeaders()
+            });
+
+            if (res.ok) {
+                window.location.href = '/home.html';
+            } else {
+                setAlert({
+                    type: 'error',
+                    message: "Impossible de supprimer l'événement."
+                });
+            }
+        }
+
         // ── Render ────────────────────────────────────────────────────────────
         if (loading) {
             return (
@@ -475,6 +494,12 @@
                             >
                                 Aide
                             </button>
+
+                            {canEdit && (
+                                <button onClick={handleDeleteEvent} className="btn-dark px-3 py-2 rounded-xl text-sm font-medium" >
+                                    Supprimer l’événement
+                                </button>
+                            )}
 
                         </div>
                     </div>

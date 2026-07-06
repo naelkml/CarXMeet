@@ -17,6 +17,7 @@ use App\Repository\RegionRepository;
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -360,20 +361,16 @@ final class EventsController extends AbstractController
         return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()]);
     }
 
-    #[Route('/events/{id}/delete', name: 'app_events_delete', requirements: ['id' => '\\d+'], methods: ['POST'])]
-    public function delete(Request $request, Events $event, EntityManagerInterface $em): Response
+    #[Route('/api/events/{id}', methods: ['DELETE'])]
+    public function apiDelete(Events $event, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_EVENT_MANAGER');
 
-        if (!$this->isCsrfTokenValid('delete_event_' . $event->getId(), (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
-        }
-
         $em->remove($event);
         $em->flush();
-        $this->addFlash('success', 'Événement supprimé.');
 
-        return $this->redirectToRoute('app_home');
+        return $this->json([
+            'message' => 'deleted'
+        ]);
     }
 }
