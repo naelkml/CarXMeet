@@ -53,69 +53,84 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 ## Linux — Debian / Ubuntu
 
-
+```bash
 sudo apt update
 sudo apt install -y php php-cli php-mysql php-mbstring php-curl php-xml unzip
 php -v
+```
 
-
+```bash
 sudo apt install -y composer
 composer --version
+```
 
-
+```bash
 sudo apt install -y mariadb-server mariadb-client
 sudo systemctl enable --now mariadb
 sudo mysql_secure_installation
 mysql --version
+```
 
-
+```bash
 sudo apt install -y git
 git --version
-
+```
 
 ## macOS
 
 > Homebrew doit être installé avant d’exécuter ces commandes.
 
-
+```bash
 brew install php
 php -v
+```
 
+```bash
 brew install composer
 composer --version
+```
 
-
+```bash
 brew install mariadb
 brew services start mariadb
 mysql --version
+```
 
-
+```bash
 brew install git
 git --version
-
+```
 
 ## Windows — PowerShell
 
+```powershell
 winget install --id PHP.PHP -e
 php -v
+```
 
-
+```powershell
 winget install --id Composer.Composer -e
 composer --version
+```
 
+```powershell
 winget install --id MariaDB.Server -e
 mysql --version
+```
 
+```powershell
 winget install --id Git.Git -e
 git --version
-
+```
 
 ## Vérification finale
 
+```bash
 php -v
 composer --version
 mysql --version
 git --version
+```
 
 
 
