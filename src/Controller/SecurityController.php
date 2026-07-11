@@ -18,10 +18,17 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusExce
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 final class SecurityController extends AbstractController
 {
-    #[Route('/home', name: 'app_home', methods: ['GET'])]
+    #[Route('/', name: 'app_root')]
+	public function root(): RedirectResponse	
+	{
+    	return $this->redirectToRoute('app_home');
+	}
+
+    #[Route('/home.html', name: 'app_home', methods: ['GET'])]
     public function home(RegionRepository $regionRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -31,7 +38,7 @@ final class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/connexion', name: 'security.login', methods: ['GET', 'POST'])]
+    #[Route('/connexion.html', name: 'security.login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         $error = $authenticationUtils->getLastAuthenticationError();
