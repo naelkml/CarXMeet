@@ -1,13 +1,8 @@
-body { background: url('../images/events-details.jpg') center/cover no-repeat fixed; min-height: 100vh; }
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-
-    background: rgba(0,0,0,.35);
-
-    pointer-events: none;
-    z-index: -1;
+body {
+    min-height: 100vh;
+    background:
+        linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
+        url('../images/events-details.jpg') center/cover no-repeat fixed;
 }
 .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
 .inner-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
