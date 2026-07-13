@@ -33,17 +33,19 @@
                     <img
                         src={`data:image/jpeg;base64,${user.profileImageBase64}`}
                         alt="Photo de profil"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover"
+                        }}
                     />
                 </div>
             );
         }
 
-        const initials = (user.username || '?').substring(0, 2).toUpperCase();
-
         return (
             <div className="avatar rounded-full" style={{ width: 54, height: 54 }}>
-                {initials}
+                {(user.username || "?").substring(0, 2).toUpperCase()}
             </div>
         );
     }
@@ -215,11 +217,24 @@
 
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                setUser({ username: payload.username || payload.sub });
+                const username = payload.username || payload.sub;
+
+                fetch(`/api/users?username=${username}`, {
+                    headers: { Authorization: "Bearer " + token }
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        const users = data.member || data["hydra:member"] || [];
+                        const me = users.find(u => u.username === username);
+
+                        if (me) {
+                            setUser(me);
+                        }
+                    });
+
             } catch {
-                localStorage.removeItem('jwt_token');
-                window.location.href = '/connexion.html';
-                return;
+                localStorage.removeItem("jwt_token");
+                window.location.href = "/connexion.html";
             }
 
             fetch('/api/regions', {
@@ -277,8 +292,8 @@
 
                         <div className="flex gap-2 flex-wrap">
                             <NavButton href="/profile-edit.html" variant="dark">Modifier mon profil</NavButton>
-                            <NavButton href="/users.html">Utilisateurs</NavButton>
-                            <NavButton href="/friends.html">Amis</NavButton>
+                            <NavButton href="/users.html" variant="dark">Utilisateurs</NavButton>
+                            <NavButton href="/friends.html" variant="dark">Amis</NavButton>
                             <NavButton onClick={handleLogout} variant="danger">Déconnexion</NavButton>
                         </div>
 
