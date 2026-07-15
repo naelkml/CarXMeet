@@ -1,142 +1,117 @@
-## À propos
+# CarXMeet
 
-CarXMeet est une application web conçue pour connecter les amateurs de voitures et créer une communauté dynamique. Les utilisateurs peuvent :
-- Créer des profils personnalisés
-- Partager leurs expériences avec des automobiles
-- Organiser des rencontres et des événements
-- Échanger des conseils et des recommandations
+## Présentation
+
+CarXMeet est une application web destinée aux passionnés d'automobile. Elle permet aux utilisateurs de créer un profil, d'échanger avec la communauté, de partager du contenu et d'organiser des événements automobiles.
 
 ## Fonctionnalités
 
-<!-- Les principales fonctionnalités du projet -->
--  Authentification utilisateur sécurisée
--  Gestion de profils utilisateurs
--  Système de recherche et filtrage
--  Création et gestion d'événements
--  Messagerie entre utilisateurs
--  Galerie photos
--  Avis et évaluations
--  Interface responsive et intuitive
+* Authentification sécurisée
+* Gestion des profils utilisateurs
+* Recherche et filtrage
+* Création et gestion d'événements
+* Messagerie entre utilisateurs
+* Galerie photos
+* Avis et évaluations
+* Interface responsive
 
-## Technologies utilisées
+## Technologies
 
-Ce projet utilise un stack technologique moderne :
+| Composant        | Technologie                    |
+| ---------------- | ------------------------------ |
+| Backend          | PHP 8.4 - Symfony 7            |
+| Frontend         | React, JavaScript, HTML5, CSS3 |
+| Templates        | Twig                           |
+| Base de données  | MySQL                          |
+| Serveur Web      | Nginx                          |
+| Conteneurisation | Docker & Docker Compose        |
 
-| Technologie | Utilisation 
-|---|---|---|
-| **PHP** | Backend - Logique serveur et traitement des données 
-| **HTML** | Structuration des pages web 
-| **Twig** | Moteur de templates pour le rendu dynamique 
-| **CSS** | Styling et mise en page responsive 
-| **JavaScript** | Interactivité client-side 
+## Prérequis
 
-### Stack complète
+* Git
+* Docker
+* Docker Compose
 
-- **Backend** : PHP (Framework recommandé : Symfony ou Laravel)
-- **Templates** : Twig (moteur de templates puissant et sécurisé)
-- **Frontend** : HTML5, CSS3, JavaScript
-- **Base de données** : MySQL/MariaDB (recommandé)
-- **Serveur** : Apache ou Nginx
+Vérification de l'installation :
+
+```bash
+git --version
+docker --version
+docker compose version
+```
 
 ## Installation
 
+Cloner le dépôt :
 
-### Prérequis
-
-Avant de commencer, assurez-vous d'avoir installé :
-- PHP >= 7.4
-- Composer (gestionnaire de dépendances PHP)
-- MySQL/MariaDB
-- Git
-
-# Installation des prérequis (si nécessaire)
-
-## Linux — Debian / Ubuntu
-
-```bash
-sudo apt update
-sudo apt install -y php php-cli php-mysql php-mbstring php-curl php-xml unzip
-php -v
-```
-
-```bash
-sudo apt install -y composer
-composer --version
-```
-
-```bash
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl enable --now mariadb
-sudo mysql_secure_installation
-mysql --version
-```
-
-```bash
-sudo apt install -y git
-git --version
-```
-
-## macOS
-
-> Homebrew doit être installé avant d’exécuter ces commandes.
-
-```bash
-brew install php
-php -v
-```
-
-```bash
-brew install composer
-composer --version
-```
-
-```bash
-brew install mariadb
-brew services start mariadb
-mysql --version
-```
-
-```bash
-brew install git
-git --version
-```
-
-## Windows — PowerShell
-
-```powershell
-winget install --id PHP.PHP -e
-php -v
-```
-
-```powershell
-winget install --id Composer.Composer -e
-composer --version
-```
-
-```powershell
-winget install --id MariaDB.Server -e
-mysql --version
-```
-
-```powershell
-winget install --id Git.Git -e
-git --version
-```
-
-## Vérification finale
-
-```bash
-php -v
-composer --version
-mysql --version
-git --version
-```
-
-
-
-### Étapes d'installation du projet
-
-1. **Cloner le repository**
 ```bash
 git clone https://github.com/naelkml/CarXMeet.git
 cd CarXMeet
+git checkout developpement
+```
+
+Construire et démarrer les conteneurs :
+
+```bash
+docker compose up --build -d
+```
+
+Installer les dépendances du projet :
+
+```bash
+docker compose exec php composer install
+docker compose exec php npm install
+```
+
+Créer la base de données et appliquer les migrations :
+
+```bash
+docker compose exec php php bin/console doctrine:database:create
+docker compose exec php php bin/console doctrine:migrations:migrate
+```
+
+Compiler les ressources front-end :
+
+```bash
+docker compose exec php npm run build
+```
+
+## Lancement
+
+Une fois les conteneurs démarrés, l'application est accessible à l'adresse :
+
+```
+http://localhost
+```
+
+## Commandes utiles
+
+Arrêter les conteneurs :
+
+```bash
+docker compose down
+```
+
+Afficher les journaux :
+
+```bash
+docker compose logs -f
+```
+
+Accéder au conteneur PHP :
+
+```bash
+docker compose exec php bash
+```
+
+Vider le cache Symfony :
+
+```bash
+docker compose exec php php bin/console cache:clear
+```
+
+## Auteur
+
+Naël Khamallah
+
+Dépôt GitHub : https://github.com/naelkml/CarXMeet
