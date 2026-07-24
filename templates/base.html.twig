@@ -1,61 +1,104 @@
+{# ============================================================
+   base.html.twig — Template de base (layout principal)
+   Tous les autres templates "héritent" de ce fichier grâce à
+   {% extends 'base.html.twig' %}.
+   Il définit la structure HTML commune à toutes les pages :
+   la balise <head>, les styles globaux, et la balise <body>.
+   ============================================================ #}
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
+
+        {# Bloc "title" : chaque page enfant peut surcharger ce bloc
+           pour définir son propre titre d'onglet. Par défaut : "Welcome!" #}
         <title>{% block title %}Welcome!{% endblock %}</title>
+
+        {# Favicon (icône de l'onglet) générée en SVG inline #}
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+
+        {# Bloc "stylesheets" : contient tous les styles CSS globaux de l'application.
+           Les pages enfants peuvent y ajouter leurs propres styles. #}
         {% block stylesheets %}
             <style>
+                /* -------------------------------------------------------
+                   Variables CSS globales (custom properties)
+                   Elles servent de "palette" réutilisable dans toute l'app.
+                   ------------------------------------------------------- */
                 :root {
-                    --cxm-radius: 16px;
-                    --cxm-radius-sm: 12px;
-                    --cxm-border: #e5e7eb;
-                    --cxm-ink: #111827;
-                    --cxm-muted: #6b7280;
-                    --cxm-bg-dark: #0b1220;
+                    --cxm-radius: 16px;      /* Rayon de bordure principal (coins arrondis) */
+                    --cxm-radius-sm: 12px;   /* Rayon de bordure secondaire (plus petit) */
+                    --cxm-border: #e5e7eb;   /* Couleur des bordures (gris clair) */
+                    --cxm-ink: #111827;      /* Couleur du texte principal (quasi-noir) */
+                    --cxm-muted: #6b7280;    /* Couleur du texte secondaire (gris moyen) */
+                    --cxm-bg-dark: #0b1220;  /* Fond sombre (utilisé pour les zones média) */
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-mediaWall — Grille d'images façon "mur de médias"
+                   Utilisée sur les pages événement et véhicule pour
+                   afficher la photo principale + les miniatures en grille.
+                   ------------------------------------------------------- */
                 .cxm-mediaWall {
                     display: grid;
-                    grid-template-columns: repeat(12, 1fr);
+                    grid-template-columns: repeat(12, 1fr); /* 12 colonnes égales */
                     gap: 10px;
                     margin-bottom: 12px;
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-mediaItem — Conteneur d'une image individuelle
+                   Appliqué sur chaque cellule du mur de médias ou de la galerie.
+                   ------------------------------------------------------- */
                 .cxm-mediaItem {
                     border: 1px solid var(--cxm-border);
                     border-radius: var(--cxm-radius);
                     overflow: hidden;
-                    background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
+                    background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%); /* Fond sombre par défaut si pas d'image */
                     display: block;
                     text-decoration: none;
                     color: inherit;
                     position: relative;
                 }
 
+                /* Image à l'intérieur d'un mediaItem : couvre tout l'espace */
                 .cxm-mediaItem img {
                     width: 100%;
                     height: 100%;
-                    object-fit: cover;
+                    object-fit: cover;   /* Recadre l'image pour remplir sans déformer */
                     display: block;
-                    transition: transform 160ms ease;
+                    transition: transform 160ms ease; /* Animation douce au survol */
                 }
 
+                /* Légère mise à l'échelle au survol de l'image */
                 .cxm-mediaItem:hover img {
                     transform: scale(1.02);
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-cover — Grande image de couverture (photo principale)
+                   Sur mobile : occupe les 12 colonnes.
+                   ------------------------------------------------------- */
                 .cxm-cover {
                     grid-column: span 12;
-                    height: clamp(220px, 28vw, 380px);
+                    height: clamp(220px, 28vw, 380px); /* Hauteur adaptative selon la taille d'écran */
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-thumb — Miniature (petite photo de galerie)
+                   Sur mobile : occupe 6 colonnes (moitié de l'écran).
+                   ------------------------------------------------------- */
                 .cxm-thumb {
                     grid-column: span 6;
                     height: 140px;
                     border-radius: var(--cxm-radius-sm);
                 }
 
+                /* -------------------------------------------------------
+                   Responsive : à partir de 860px de large (tablette/desktop)
+                   La cover prend 8 colonnes et 2 rangées.
+                   Les thumbs prennent 4 colonnes chacune.
+                   ------------------------------------------------------- */
                 @media (min-width: 860px) {
                     .cxm-cover {
                         grid-column: span 8;
@@ -69,6 +112,10 @@
                     }
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-galleryGrid — Grille de galerie (photos supplémentaires)
+                   Affiche les photos en colonnes auto-ajustées, format 4:3.
+                   ------------------------------------------------------- */
                 .cxm-galleryGrid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -77,13 +124,18 @@
 
                 .cxm-galleryGrid .cxm-mediaItem {
                     border-radius: var(--cxm-radius-sm);
-                    aspect-ratio: 4 / 3;
+                    aspect-ratio: 4 / 3; /* Rapport largeur/hauteur fixe : paysage */
                 }
 
                 .cxm-galleryGrid .cxm-mediaItem img {
                     height: 100%;
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-tile — Tuile (carte) contenant une image + actions
+                   Utilisée dans l'éditeur de galerie pour afficher chaque
+                   photo avec un bouton "Supprimer" en dessous.
+                   ------------------------------------------------------- */
                 .cxm-tile {
                     border: 1px solid var(--cxm-border);
                     border-radius: var(--cxm-radius-sm);
@@ -91,6 +143,7 @@
                     background: white;
                 }
 
+                /* Zone image de la tuile — fond sombre */
                 .cxm-tileMedia {
                     background: var(--cxm-bg-dark);
                 }
@@ -101,19 +154,24 @@
                     background: var(--cxm-bg-dark);
                 }
 
+                /* Zone d'actions de la tuile (boutons) — fond blanc */
                 .cxm-tileActions {
                     padding: 8px;
                     background: white;
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-avatar — Avatar circulaire (photo de profil)
+                   Utilisé dans les badges utilisateur et dans la navbar.
+                   ------------------------------------------------------- */
                 .cxm-avatar {
                     width: 34px;
                     height: 34px;
-                    border-radius: 999px;
+                    border-radius: 999px; /* Cercle parfait */
                     border: 1px solid var(--cxm-border);
                     overflow: hidden;
                     background: linear-gradient(135deg, #111827 0%, #374151 50%, #111827 100%);
-                    flex: 0 0 auto;
+                    flex: 0 0 auto; /* Ne rétrécit pas dans un flexbox */
                 }
 
                 .cxm-avatar img {
@@ -123,6 +181,11 @@
                     display: block;
                 }
 
+                /* -------------------------------------------------------
+                   .cxm-userRow — Ligne utilisateur
+                   Conteneur horizontal affichant avatar + nom + actions.
+                   Utilisé dans les listes d'amis, participants, etc.
+                   ------------------------------------------------------- */
                 .cxm-userRow {
                     display: flex;
                     align-items: center;
@@ -134,47 +197,58 @@
                     background: white;
                 }
 
+                /* Partie gauche : avatar + infos textuelles */
                 .cxm-userMeta {
                     display: flex;
                     align-items: center;
                     gap: 10px;
-                    min-width: 0;
+                    min-width: 0; /* Permet la troncature du texte */
                 }
 
+                /* Nom d'utilisateur en gras, tronqué si trop long */
                 .cxm-userName {
                     font-weight: 700;
                     color: var(--cxm-ink);
                     text-decoration: none;
                     white-space: nowrap;
                     overflow: hidden;
-                    text-overflow: ellipsis;
+                    text-overflow: ellipsis; /* "..." si le texte dépasse */
                 }
 
+                /* Sous-titre (prénom + nom) en petit gris */
                 .cxm-userSub {
                     font-size: 12px;
                     color: var(--cxm-muted);
                     margin-top: 2px;
                 }
 
-                /* Lightbox */
+                /* -------------------------------------------------------
+                   Lightbox — Visionneuse d'images plein écran
+                   S'affiche quand on clique sur une image avec data-cxm-lb="1".
+                   ------------------------------------------------------- */
+
+                /* Superposition plein écran, centrée */
                 .cxm-lb {
                     position: fixed;
-                    inset: 0;
-                    z-index: 9999;
+                    inset: 0; /* Couvre tout l'écran */
+                    z-index: 9999; /* Par-dessus tout le reste */
                     display: grid;
                     place-items: center;
                 }
 
+                /* Masqué par défaut (attribut HTML "hidden") */
                 .cxm-lb[hidden] {
                     display: none;
                 }
 
+                /* Fond semi-transparent noir derrière la fenêtre */
                 .cxm-lbBackdrop {
                     position: absolute;
                     inset: 0;
                     background: rgba(0, 0, 0, 0.75);
                 }
 
+                /* Fenêtre de la lightbox : centrée, arrondie, fond sombre */
                 .cxm-lbPane {
                     position: relative;
                     width: min(1040px, calc(100vw - 28px));
@@ -186,6 +260,7 @@
                     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
                 }
 
+                /* Barre du haut : légende + bouton Fermer */
                 .cxm-lbTop {
                     display: flex;
                     align-items: center;
@@ -197,6 +272,7 @@
                     border-bottom: 1px solid rgba(255, 255, 255, 0.10);
                 }
 
+                /* Légende de l'image (tronquée si trop longue) */
                 .cxm-lbCaption {
                     font-size: 13px;
                     color: rgba(255, 255, 255, 0.82);
@@ -205,6 +281,7 @@
                     text-overflow: ellipsis;
                 }
 
+                /* Bouton "Fermer" en haut à droite */
                 .cxm-lbClose {
                     padding: 8px 10px;
                     border: 0;
@@ -214,12 +291,14 @@
                     cursor: pointer;
                 }
 
+                /* Zone d'affichage de l'image agrandie */
                 .cxm-lbBody {
                     display: grid;
                     place-items: center;
                     background: #000;
                 }
 
+                /* L'image s'adapte à l'espace disponible sans dépasser l'écran */
                 .cxm-lbBody img {
                     max-width: 100%;
                     max-height: calc(100vh - 90px);
@@ -228,6 +307,8 @@
                     display: block;
                 }
 
+                /* Désactive les animations pour les utilisateurs qui préfèrent
+                   les interfaces sans mouvement (accessibilité) */
                 @media (prefers-reduced-motion: reduce) {
                     .cxm-mediaItem img {
                         transition: none;
@@ -236,20 +317,33 @@
             </style>
         {% endblock %}
 
+        {# Bloc "javascripts" : charge les fichiers JavaScript de l'application.
+           Le bloc "importmap" utilise AssetMapper de Symfony pour charger app.js. #}
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
     <body>
+        {# Bloc "body" : zone principale du contenu.
+           Chaque page enfant remplit ce bloc avec son propre HTML. #}
         {% block body %}{% endblock %}
 
+        {# ---------------------------------------------------------------
+           Lightbox HTML — Structure de la visionneuse d'images
+           Elle est cachée par défaut (attribut "hidden").
+           Le JavaScript ci-dessous la rend visible quand on clique
+           sur un lien portant data-cxm-lb="1".
+           --------------------------------------------------------------- #}
         <div id="cxm-lightbox" class="cxm-lb" hidden aria-hidden="true">
+            {# Fond cliquable pour fermer la lightbox #}
             <div class="cxm-lbBackdrop" data-cxm-lb-close="1"></div>
             <div class="cxm-lbPane" role="dialog" aria-modal="true" aria-label="Image">
+                {# Barre supérieure : légende dynamique + bouton fermer #}
                 <div class="cxm-lbTop">
                     <div id="cxm-lbCaption" class="cxm-lbCaption"></div>
                     <button type="button" class="cxm-lbClose" data-cxm-lb-close="1">Fermer</button>
                 </div>
+                {# Zone d'affichage de l'image — src rempli par JS #}
                 <div class="cxm-lbBody">
                     <img id="cxm-lbImg" alt="">
                 </div>
@@ -257,39 +351,67 @@
         </div>
 
         <script>
+            /*
+             * Script de la Lightbox (visionneuse d'images)
+             * Tout le code est dans une IIFE (fonction auto-exécutée)
+             * pour éviter de polluer l'espace global de variables.
+             */
             (function () {
+                /* Récupération des éléments HTML de la lightbox */
                 var lb = document.getElementById('cxm-lightbox');
                 var lbImg = document.getElementById('cxm-lbImg');
                 var lbCaption = document.getElementById('cxm-lbCaption');
+
+                /* Si un élément est manquant, on arrête le script */
                 if (!lb || !lbImg || !lbCaption) return;
 
+                /* Mémorise l'élément focalisé avant l'ouverture (accessibilité) */
                 var lastFocus = null;
 
+                /*
+                 * openLightbox(src, caption)
+                 * Ouvre la lightbox avec l'image et la légende données.
+                 * - src     : URL ou base64 de l'image à afficher
+                 * - caption : texte de la légende (nom de l'événement, etc.)
+                 */
                 function openLightbox(src, caption) {
-                    lastFocus = document.activeElement;
+                    lastFocus = document.activeElement; /* Sauvegarde le focus actuel */
                     lbImg.src = src || '';
                     lbImg.alt = caption || 'Image';
                     lbCaption.textContent = caption || '';
-                    lb.hidden = false;
+                    lb.hidden = false; /* Rend la lightbox visible */
                     lb.setAttribute('aria-hidden', 'false');
-                    document.body.style.overflow = 'hidden';
+                    document.body.style.overflow = 'hidden'; /* Bloque le défilement de la page */
 
+                    /* Place le focus sur le bouton Fermer pour l'accessibilité clavier */
                     var closeBtn = lb.querySelector('[data-cxm-lb-close="1"]');
                     if (closeBtn) closeBtn.focus();
                 }
 
+                /*
+                 * closeLightbox()
+                 * Ferme la lightbox et restaure l'état de la page.
+                 */
                 function closeLightbox() {
-                    lb.hidden = true;
+                    lb.hidden = true; /* Cache la lightbox */
                     lb.setAttribute('aria-hidden', 'true');
-                    lbImg.src = '';
-                    document.body.style.overflow = '';
+                    lbImg.src = ''; /* Vide l'image pour libérer la mémoire */
+                    document.body.style.overflow = ''; /* Restaure le défilement */
+                    /* Rend le focus à l'élément qui l'avait avant l'ouverture */
                     if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
                 }
 
+                /*
+                 * Écouteur global des clics sur toute la page.
+                 * Détecte deux cas :
+                 * 1. Clic sur un élément [data-cxm-lb-close="1"] → ferme la lightbox
+                 * 2. Clic sur un lien <a data-cxm-lb="1"> → ouvre la lightbox
+                 */
                 document.addEventListener('click', function (e) {
                     var t = e.target;
                     if (!t) return;
 
+                    /* Cas 1 : bouton ou fond de fermeture */
                     var closeEl = t.closest && t.closest('[data-cxm-lb-close="1"]');
                     if (closeEl) {
                         e.preventDefault();
@@ -297,13 +419,16 @@
                         return;
                     }
 
+                    /* Cas 2 : lien image avec data-cxm-lb="1" */
                     var a = t.closest && t.closest('a[data-cxm-lb="1"]');
                     if (!a) return;
 
                     var src = a.getAttribute('href') || '';
                     if (!src) return;
 
-                    e.preventDefault();
+                    e.preventDefault(); /* Empêche la navigation vers le lien */
+
+                    /* Récupère la légende depuis data-cxm-caption ou l'alt de l'image */
                     var caption = a.getAttribute('data-cxm-caption') || '';
                     if (!caption) {
                         var img = a.querySelector('img');
@@ -312,8 +437,11 @@
                     openLightbox(src, caption);
                 });
 
+                /*
+                 * Fermeture de la lightbox avec la touche Échap (accessibilité clavier).
+                 */
                 document.addEventListener('keydown', function (e) {
-                    if (lb.hidden) return;
+                    if (lb.hidden) return; /* Ne fait rien si la lightbox est déjà fermée */
                     if (e.key === 'Escape') {
                         e.preventDefault();
                         closeLightbox();

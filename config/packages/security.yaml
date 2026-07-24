@@ -1,71 +1,157 @@
+# =============================================================================
+# FICHIER : config/packages/security.yaml
+# RÔLE    : Configure toute la sécurité de l'application Symfony.
+#
+# Ce fichier est le "gardien" de ton application. Il répond à trois questions :
+#   1. Comment vérifier l'identité d'un utilisateur ? (authentification)
+#   2. Quelles pages peut-il voir ? (autorisation / contrôle d'accès)
+#   3. Comment son mot de passe est-il protégé ? (hashage)
+# =============================================================================
+
 security:
+    # -------------------------------------------------------------------------
+    # HASHAGE DES MOTS DE PASSE
+    # -------------------------------------------------------------------------
+    # Un mot de passe ne doit JAMAIS être stocké en clair dans la base de données.
+    # On le "hache" (transforme en une suite illisible de caractères) avant de
+    # l'enregistrer. Ainsi, même si la base est volée, les mots de passe restent secrets.
+    #
+    # 'auto' = Symfony choisit automatiquement le meilleur algorithme disponible
+    #          sur le serveur (bcrypt ou argon2id).
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
+    # -------------------------------------------------------------------------
+    # FOURNISSEURS D'UTILISATEURS (providers)
+    # -------------------------------------------------------------------------
+    # Un "provider" dit à Symfony où aller chercher les informations d'un
+    # utilisateur (nom, mot de passe, rôles...).
+    # Ici on utilise la base de données via l'entité User.
+    #
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        # users_in_memory: { memory: null }
+        # users_in_memory: { memory: null }  ← version simpliste : utilisateurs en mémoire (non utilisée ici)
+
+        # Notre fournisseur personnalisé, nommé "app_user_provider"
         app_user_provider:
             entity:
+                # Symfony va chercher les utilisateurs dans la table correspondant
+                # à cette classe PHP (l'entité User de notre application)
                 class: App\Entity\User
+                # Le champ utilisé pour identifier l'utilisateur lors de la connexion
+                # (ici "username" = le nom d'utilisateur, pas l'email)
                 property: username
 
+    # -------------------------------------------------------------------------
+    # PARE-FEUX (firewalls)
+    # -------------------------------------------------------------------------
+    # Les pare-feux définissent des "zones" de l'application avec chacune
+    # ses propres règles de sécurité. Symfony parcourt les règles de HAUT en
+    # BAS et applique la PREMIÈRE qui correspond à l'URL demandée.
     firewalls:
+        # --- Zone développement ---
+        # Désactive complètement la sécurité pour les outils internes
+        # du développeur (barre de debug, profiler, ressources statiques).
         dev:
+            # "pattern" = expression régulière qui filtre les URLs concernées
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
-            security: false
+            security: false  # ← aucune vérification de sécurité pour ces URLs
+
+        # --- Zone connexion API ---
+        # Gère la route /api/login où l'utilisateur envoie son identifiant
+        # et mot de passe pour obtenir un token JWT en échange.
         api_login:
             pattern: ^/api/login
-            stateless: true
+            stateless: true  # ← pas de session stockée côté serveur (mode API)
             json_login:
+                # L'URL exacte qui reçoit les données de connexion (POST JSON)
                 check_path: /api/login_check
+                # Que faire si la connexion réussit → génère et retourne le token JWT
                 success_handler: lexik_jwt_authentication.handler.authentication_success
+                # Que faire si la connexion échoue → retourne une erreur JSON
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # --- Zone documentation API (accès libre) ---
+        # Permet d'accéder à la documentation générée par API Platform
+        # sans avoir à se connecter (pratique pour les développeurs qui testent).
         api_docs: # ← nouveau firewall avant api
             pattern: ^/api(/docs.*|$)      # cible /api et /api/docs...
-            security: false
+            security: false  # ← pas de vérification pour la doc
+
+        # --- Zone API protégée ---
+        # Toutes les routes /api/* (sauf celles déjà traitées ci-dessus)
+        # nécessitent un token JWT valide.
         api:
             pattern: ^/api
-            stateless: true
-            jwt: ~
+            stateless: true  # ← pas de session, chaque requête doit porter son token
+            jwt: ~            # ← utilise le bundle LexikJWT pour valider le token
+
+        # --- Zone application web classique ---
+        # La partie "site web" avec formulaires HTML, sessions, etc.
         main:
-            lazy: true
-            provider: app_user_provider
+            lazy: true  # ← la session n'est créée que si vraiment nécessaire (optimisation)
+            provider: app_user_provider  # ← utilise notre fournisseur défini plus haut
+
+            # Formulaire de connexion web classique (page HTML avec champs login/mot de passe)
             form_login:
-                login_path: security.login
-                check_path: security.login
-                default_target_path: app_home
-                always_use_default_target_path: true
+                login_path: security.login        # route qui affiche le formulaire de login
+                check_path: security.login        # route qui vérifie les données soumises
+                default_target_path: app_home     # page de redirection après connexion réussie
+                always_use_default_target_path: true  # ← toujours aller sur app_home (pas retour arrière)
+
+            # Déconnexion
             logout:
                 path: /deconnexion           # route pour déconnecter l'utilisateur
                 target: /connexion           # route ou rediriger après le logout
+
+            # Vérificateur personnalisé appelé à chaque connexion
+            # (ex: vérifier si le compte est activé, non banni, etc.)
             user_checker: App\Security\UserChecker
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            # switch_user: true  ← (désactivé) permettrait à un admin de "se faire passer" pour un autre user
 
+    # -------------------------------------------------------------------------
+    # CONTRÔLE D'ACCÈS (access_control)
+    # -------------------------------------------------------------------------
+    # Liste de règles qui définissent QUI peut accéder à QUELLE URL.
+    # Symfony applique la PREMIÈRE règle qui correspond.
+    # "roles" = le niveau de permission requis.
+    #
+    # Rôles importants :
+    #   PUBLIC_ACCESS       → tout le monde, même non connecté
+    #   IS_AUTHENTICATED_FULLY → toute personne connectée (avec n'importe quel rôle)
+    #   ROLE_USER           → utilisateur connecté de base
+    #   ROLE_EVENT_MANAGER  → utilisateur avec droit de gérer les événements
+    #
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api$, roles: PUBLIC_ACCESS }
-        - { path: ^/home, roles: ROLE_USER }
-        - { path: ^/profil, roles: ROLE_USER }
-        - { path: ^/garage, roles: ROLE_USER }
-        - { path: ^/events/new, roles: ROLE_EVENT_MANAGER }
-        - { path: ^/events/\d+/edit, roles: ROLE_EVENT_MANAGER }
-        - { path: ^/events/\d+/delete, roles: ROLE_EVENT_MANAGER }
-        - { path: ^/events, roles: ROLE_USER }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }      # login API : accessible sans être connecté
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }       # documentation API : accessible à tous
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }   # inscription : accessible sans être connecté
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }   # tout le reste de l'API : faut être connecté
+        - { path: ^/api$, roles: PUBLIC_ACCESS }           # racine /api exacte : accessible à tous
+        - { path: ^/home, roles: ROLE_USER }               # page d'accueil : utilisateur connecté uniquement
+        - { path: ^/profil, roles: ROLE_USER }             # page profil : utilisateur connecté uniquement
+        - { path: ^/garage, roles: ROLE_USER }             # garage : utilisateur connecté uniquement
+        - { path: ^/events/new, roles: ROLE_EVENT_MANAGER }            # créer un event : rôle organisateur requis
+        - { path: ^/events/\d+/edit, roles: ROLE_EVENT_MANAGER }       # modifier un event : rôle organisateur requis
+        - { path: ^/events/\d+/delete, roles: ROLE_EVENT_MANAGER }     # supprimer un event : rôle organisateur requis
+        - { path: ^/events, roles: ROLE_USER }             # voir les events : utilisateur connecté
+        # - { path: ^/admin, roles: ROLE_ADMIN }           # (désactivé) section admin
+        # - { path: ^/profile, roles: ROLE_USER }          # (désactivé) exemple commenté
 
+# =============================================================================
+# CONFIGURATION SPÉCIALE POUR LES TESTS AUTOMATISÉS
+# =============================================================================
+# "when@test" = ce bloc ne s'applique QUE dans l'environnement de test.
+# En test, on réduit le "coût" du hashage pour que les tests s'exécutent
+# plus vite, sans pour autant compromettre la sécurité en production.
 when@test:
     security:
         password_hashers:

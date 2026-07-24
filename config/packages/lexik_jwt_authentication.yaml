@@ -1,4 +1,53 @@
+# =============================================================================
+# FICHIER : config/packages/lexik_jwt_authentication.yaml
+# RÔLE    : Configure l'authentification par token JWT pour l'API.
+#
+# C'est quoi un JWT (JSON Web Token) ?
+#   Imagine un badge d'accès numérique. Quand un utilisateur se connecte
+#   avec son identifiant et mot de passe, le serveur lui remet un "badge"
+#   (le token JWT). Pour toutes les requêtes suivantes, l'utilisateur
+#   présente ce badge, et le serveur le laisse passer sans redemander
+#   le mot de passe.
+#
+#   Le token est une chaîne de caractères encodée qui contient :
+#   - l'identité de l'utilisateur (son ID, ses rôles...)
+#   - une date d'expiration
+#   - une signature cryptographique (pour qu'on ne puisse pas le falsifier)
+#
+# Ce système fonctionne avec une paire de clés cryptographiques :
+#   - Clé PRIVÉE : secrète, connue uniquement du serveur, sert à SIGNER les tokens
+#   - Clé PUBLIQUE : peut être partagée, sert à VÉRIFIER que le token est authentique
+# =============================================================================
+
 lexik_jwt_authentication:
+    # -------------------------------------------------------------------------
+    # CLÉ PRIVÉE
+    # -------------------------------------------------------------------------
+    # Fichier contenant la clé privée RSA (ou EC) utilisée pour SIGNER les tokens JWT.
+    # Signer = apposer une signature cryptographique qui prouve que c'est bien
+    # notre serveur qui a émis ce token.
+    #
+    # "resolve:" indique à Symfony de résoudre le chemin du fichier (ex: config/jwt/private.pem).
+    # Cette valeur est lue depuis la variable d'environnement JWT_SECRET_KEY dans .env.
+    # IMPORTANT : ce fichier ne doit JAMAIS être commité dans Git !
     secret_key: '%env(resolve:JWT_SECRET_KEY)%'
+
+    # -------------------------------------------------------------------------
+    # CLÉ PUBLIQUE
+    # -------------------------------------------------------------------------
+    # Fichier contenant la clé publique correspondante, utilisée pour VÉRIFIER
+    # la signature d'un token JWT reçu dans une requête.
+    # Si la signature est valide, on sait que le token est authentique et
+    # qu'il n'a pas été modifié.
+    #
+    # Cette valeur est lue depuis la variable d'environnement JWT_PUBLIC_KEY dans .env.
     public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
+
+    # -------------------------------------------------------------------------
+    # PHRASE DE PASSE (passphrase)
+    # -------------------------------------------------------------------------
+    # La clé privée peut être protégée par une phrase de passe (comme un mot de
+    # passe pour protéger le fichier de clé lui-même).
+    # Cette phrase est lue depuis la variable d'environnement JWT_PASSPHRASE dans .env.
+    # IMPORTANT : à garder secrète, ne jamais commiter dans Git !
     pass_phrase: '%env(JWT_PASSPHRASE)%'

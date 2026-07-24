@@ -1,16 +1,31 @@
+{# ============================================================
+   security/index.html.twig — Page de test du SecurityController
+   Ce template est une page générée automatiquement par Symfony
+   lors de la création du contrôleur (make:controller).
+   Elle sert uniquement à vérifier que le contrôleur fonctionne.
+   En production, ce fichier peut être supprimé ou remplacé.
+   Ce template hérite du layout de base (base.html.twig).
+   ============================================================ #}
 {% extends 'base.html.twig' %}
 
+{# Titre de l'onglet : nom du contrôleur (généré automatiquement) #}
 {% block title %}Hello SecurityController!{% endblock %}
 
+{# Bloc body : contenu de la page de test #}
 {% block body %}
 <style>
+    /* Style simple pour la page de test :
+       conteneur centré, police lisible, fond gris pour le code */
     .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
 </style>
 
 <div class="example-wrapper">
+    {# Affiche le nom du contrôleur passé depuis SecurityController
+       "controller_name" est une variable transmise par le contrôleur PHP #}
     <h1>Hello {{ controller_name }}! ✅</h1>
 
+    {# Informations de débogage : chemins vers le contrôleur et ce template #}
     This friendly message is coming from:
     <ul>
         <li>Your controller at <code>/Users/naelkhamallah/CarXMeet/src/Controller/SecurityController.php</code></li>

@@ -1,30 +1,48 @@
+{# ============================================================
+   security/verify_email.html.twig — Page de confirmation d'email
+   Affichée après qu'un utilisateur a cliqué sur le lien de
+   vérification reçu par email.
+   Indique que le compte est activé et invite l'utilisateur
+   à se connecter.
+   Ce template hérite du layout de base (base.html.twig).
+   ============================================================ #}
 {% extends "base.html.twig" %}
 
+{# Titre de l'onglet pour la page de confirmation #}
 {% block title %}Email vérifié - CarXMeet{% endblock %}
 
+{# Bloc body : contenu principal de la page #}
 {% block body %}
+{# Chargement de la police Inter depuis Google Fonts (design moderne) #}
 <head><link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
+
+    {# Conteneur principal centré plein écran #}
     <div class="page-container">
 
+        {# Sous-conteneur de largeur max 28rem (448px) #}
         <div class="form-container">
 
+            {# En-tête avec logo CarXMeet et sous-titre #}
             <div class="header">
                 <h1 class="logo-text">CarXMeet</h1>
                 <p class="subtitle">Vérification de compte</p>
             </div>
 
+            {# Carte principale : confirmation de l'activation du compte #}
             <div class="card text-center">
 
                 <h2 class="card-title">Email vérifié</h2>
 
+                {# Message de succès : compte activé, invitation à se connecter #}
                 <p class="text-white-small">
                     Ton compte est maintenant activé.<br>
                     Tu peux maintenant te connecter et rejoindre la communauté CarXMeet.
                 </p>
 
+                {# Bouton de redirection vers la page de connexion #}
                 <div style="margin-top: 2rem;">
                     <a href="/connexion.html" class="btn-primary">
                         Se connecter
@@ -33,6 +51,7 @@
 
             </div>
 
+            {# Message de bienvenue en bas de la carte #}
             <p class="register-text">
                 Bienvenue dans CarXMeet !
             </p>
@@ -42,10 +61,16 @@
     </div>
 
     <style>
-        /* Background */
+        /* ---------------------------------------------------
+           Styles de la page de vérification d'email
+           Thème sombre avec dégradé bleu nuit (inspiré des
+           pages d'authentification modernes).
+           --------------------------------------------------- */
+
+        /* Fond de page : dégradé sombre du bleu nuit au bleu marine */
         body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 100vh; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;}
 
-        /* Layout */
+        /* Conteneur principal : flexbox centré verticalement et horizontalement */
         .page-container {
             display: flex;
             align-items: center;
@@ -54,17 +79,20 @@
             padding: 1rem;
         }
 
+        /* Sous-conteneur : largeur maximale de 28rem */
         .form-container {
             width: 100%;
             max-width: 28rem;
         }
 
-        /* Header */
+        /* En-tête : logo + sous-titre centrés */
         .header {
             text-align: center;
             margin-bottom: 2rem;
         }
 
+        /* Logo CarXMeet : texte avec dégradé bleu #}
+           -webkit-background-clip applique le dégradé au texte uniquement */
         .logo-text {
             background: linear-gradient(135deg, #3b82f6, #60a5fa);
             -webkit-background-clip: text;
@@ -73,15 +101,16 @@
             font-weight: 900;
         }
 
+        /* Sous-titre en blanc */
         .subtitle {
             color: #ffffff;
             font-size: 0.875rem;
         }
 
-        /* Card */
+        /* Carte principale : fond semi-transparent avec effet de flou (glassmorphism) */
         .card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.05); /* Fond blanc très transparent */
+            backdrop-filter: blur(10px);         /* Flou de l'arrière-plan */
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 1rem;
             padding: 2rem;
@@ -89,6 +118,7 @@
             text-align: center;
         }
 
+        /* Titre de la carte en blanc */
         .card-title {
             color: white;
             font-size: 1.5rem;
@@ -96,13 +126,13 @@
             margin-bottom: 1rem;
         }
 
-        /* Text */
+        /* Texte de contenu : blanc légèrement transparent */
         .text-white-small {
             color: rgba(255,255,255,0.85);
             font-size: 0.9rem;
         }
 
-        /* Button */
+        /* Bouton principal : dégradé bleu, arrondi, avec ombre */
         .btn-primary {
             display: inline-block;
             color: white;
@@ -111,21 +141,22 @@
             border-radius: 0.5rem;
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             text-decoration: none;
-            transition: 0.2s;
+            transition: 0.2s; /* Animation douce au survol */
         }
 
+        /* Au survol : le bouton remonte légèrement et s'assombrit */
         .btn-primary:hover {
             transform: translateY(-1px);
             background: linear-gradient(135deg, #2563eb, #1e40af);
         }
 
-        /* Footer text */
+        /* Texte de bas de page : blanc atténué */
         .register-text {
             text-align: center;
             margin-top: 1.5rem;
             color: #ffffff;
             font-size: 0.85rem;
-            opacity: 0.6;
+            opacity: 0.6; /* Très discret */
         }
     </style>
 

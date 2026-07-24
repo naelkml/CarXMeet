@@ -1,20 +1,40 @@
+{# ============================================================
+   security/login.html.twig — Page de connexion
+   Affiche le formulaire de login de l'application CarXMeet.
+   L'utilisateur saisit son nom d'utilisateur et son mot de passe.
+   Ce template hérite du layout de base (base.html.twig).
+   ============================================================ #}
 {% extends 'base.html.twig' %}
 
+{# Titre de l'onglet du navigateur pour la page de connexion #}
 {% block title %}CarXMeet - Connexion{% endblock %}
 
+{# Bloc body : contenu principal de la page #}
 {% block body %}
+    {# Conteneur centré plein écran — la carte de connexion est centrée verticalement et horizontalement #}
     <main style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+        {# Carte de connexion : largeur max 420px, bordure et coins arrondis #}
         <section style="width: 100%; max-width: 420px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
             <h1 style="margin: 0 0 16px; font-size: 22px;">Connexion</h1>
 
+            {# Bloc d'erreur : affiché uniquement si une erreur de connexion a eu lieu
+               (mauvais identifiants, compte non vérifié, etc.)
+               "error" est transmis par SecurityController #}
             {% if error %}
                 <div style="margin: 0 0 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 10px;">
+                    {# Traduit le message d'erreur Symfony depuis le domaine "security" #}
                     {{ error.messageKey|trans(error.messageData, 'security') }}
                 </div>
 
+                {# Bouton de renvoi de l'email de vérification.
+                   Affiché uniquement si l'email n'a pas encore été confirmé
+                   ET qu'un nom d'utilisateur est connu (last_username).
+                   "show_resend_button" est transmis par SecurityController. #}
                 {% if show_resend_button and last_username %}
                     <form method="post" action="{{ path('security.resend_verification_email') }}" style="margin: 0 0 12px;">
+                        {# Champ caché : transmet le nom d'utilisateur au contrôleur #}
                         <input type="hidden" name="username" value="{{ last_username }}">
+                        {# Token CSRF : protection contre les attaques de type cross-site request forgery #}
                         <input type="hidden" name="_token" value="{{ csrf_token('resend_verification_email') }}">
                         <button type="submit" style="padding: 10px 12px; border: 1px solid #1d4ed8; border-radius: 10px; background: #2563eb; color: white; cursor: pointer; width: 100%;">
                             Renvoyer l'email de vérification
@@ -23,7 +43,12 @@
                 {% endif %}
             {% endif %}
 
+            {# Formulaire de connexion principal.
+               Les champs _username et _password sont les noms attendus
+               par le système d'authentification de Symfony (SecurityBundle). #}
             <form method="post" action="{{ path('security.login') }}" style="display: grid; gap: 12px;">
+
+                {# Champ : nom d'utilisateur #}
                 <div style="display: grid; gap: 6px;">
                     <label for="username" style="font-size: 14px;">Nom d'utilisateur</label>
                     <input
@@ -33,10 +58,13 @@
                         required
                         autocomplete="username"
                         value="{{ last_username|default('') }}"
+                        {# "last_username" : pré-remplit le champ si l'utilisateur avait déjà saisi son nom
+                           (utile en cas d'erreur pour ne pas avoir à tout retaper) #}
                         style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;"
                     >
                 </div>
 
+                {# Champ : mot de passe (masqué à la saisie) #}
                 <div style="display: grid; gap: 6px;">
                     <label for="password" style="font-size: 14px;">Mot de passe</label>
                     <input
@@ -49,8 +77,11 @@
                     >
                 </div>
 
+                {# Champ CSRF caché : jeton de sécurité généré par Symfony
+                   pour s'assurer que le formulaire vient bien de notre site #}
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+                {# Bouton de soumission du formulaire #}
                 <button type="submit" style="padding: 10px 12px; border: 0; border-radius: 10px; background: #111827; color: white; cursor: pointer;">
                     Se connecter
                 </button>

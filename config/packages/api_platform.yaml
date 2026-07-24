@@ -1,18 +1,85 @@
+# =============================================================================
+# FICHIER : config/packages/api_platform.yaml
+# RÔLE    : Configure API Platform, la bibliothèque qui génère automatiquement
+#           une API REST (et GraphQL) à partir de tes entités Doctrine.
+#
+# C'est quoi une API ?
+#   Une API (Application Programming Interface) est une "porte d'entrée"
+#   qui permet à d'autres applications (une app mobile, un front-end React,
+#   une autre application...) de communiquer avec ton serveur.
+#   Elles envoient des requêtes HTTP et reçoivent des données au format JSON.
+#
+# API Platform fait le travail énorme à ta place : tu définis ton entité
+# (ex: Car, Event, User), et il crée automatiquement toutes les routes
+# et la documentation pour lire, créer, modifier, supprimer ces données.
+# =============================================================================
+
 api_platform:
+    # -------------------------------------------------------------------------
+    # INFORMATIONS GÉNÉRALES DE L'API
+    # -------------------------------------------------------------------------
+    # Ces informations apparaissent dans la documentation interactive
+    # générée automatiquement (accessible sur /api/docs).
+
+    # Nom affiché de l'API dans la documentation
     title: CarXMeet API
+
+    # Numéro de version de l'API (utile pour les clients qui s'y connectent)
     version: 1.0.0
+
+    # -------------------------------------------------------------------------
+    # FORMATS DE DONNÉES SUPPORTÉS (formats)
+    # -------------------------------------------------------------------------
+    # Définit dans quels formats les données peuvent être échangées.
+    # Le client choisit le format via l'en-tête HTTP "Accept".
     formats:
+        # JSON-LD : JSON enrichi avec des métadonnées sémantiques (liens, types...).
+        # C'est le format "natif" d'API Platform, plus riche que le JSON simple.
         jsonld: ['application/ld+json']
+
+        # JSON classique : format léger et universel, compréhensible par n'importe
+        # quelle application (une app mobile, React, Vue.js...).
         json: ['application/json']
+
+    # -------------------------------------------------------------------------
+    # FORMATS POUR LES MISES À JOUR PARTIELLES (patch_formats)
+    # -------------------------------------------------------------------------
+    # Quand on envoie une requête PATCH (modification partielle d'une ressource),
+    # ces formats sont acceptés. "merge-patch" = on n'envoie que les champs
+    # qu'on veut modifier, pas tout l'objet.
     patch_formats:
         json: ['application/merge-patch+json']
         jsonld: ['application/merge-patch+json']
+
+    # -------------------------------------------------------------------------
+    # VALEURS PAR DÉFAUT POUR TOUTES LES RESSOURCES (defaults)
+    # -------------------------------------------------------------------------
+    # Ces paramètres s'appliquent à toutes les entités exposées par l'API,
+    # sauf si elles définissent leurs propres valeurs.
     defaults:
+        # stateless: true = l'API ne crée pas de session utilisateur.
+        # Chaque requête est indépendante et doit contenir son propre token d'authentification.
+        # C'est le comportement standard des API modernes (REST stateless).
         stateless: true
+
+        # En-têtes qui influencent le cache HTTP des réponses.
+        # "vary" indique aux systèmes de cache (navigateur, CDN...) que la réponse
+        # peut changer selon ces en-têtes HTTP → ils gardent une version par combinaison.
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+            # Content-Type  : la réponse varie selon le format demandé (JSON vs JSON-LD)
+            # Authorization : la réponse varie selon l'utilisateur connecté (son token)
+            # Origin        : la réponse varie selon le domaine qui fait la requête (CORS)
+
+    # -------------------------------------------------------------------------
+    # DOCUMENTATION SWAGGER / OPENAPI
+    # -------------------------------------------------------------------------
+    # Swagger est l'interface web interactive qui documente et permet de tester
+    # l'API directement depuis le navigateur (accessible sur /api/docs).
     swagger:
+        # Ajoute un bouton "Authorize" dans Swagger pour entrer son token JWT.
+        # Ainsi, on peut tester les routes protégées directement depuis la doc.
         api_keys:
             JWT:
-                name: Authorization
-                type: header
+                name: Authorization  # nom de l'en-tête HTTP qui porte le token
+                type: header         # le token est envoyé dans l'en-tête (pas dans l'URL)

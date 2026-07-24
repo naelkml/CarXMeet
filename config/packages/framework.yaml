@@ -1,16 +1,64 @@
+# =============================================================================
+# FICHIER : config/packages/framework.yaml
+# RÔLE    : Configure le cœur du framework Symfony lui-même.
+#
+# Le "FrameworkBundle" est le composant central de Symfony. Ce fichier
+# configure ses options essentielles : la clé secrète, la gestion des
+# sessions utilisateur, et d'autres fonctionnalités fondamentales.
+#
+# Documentation complète :
 # see https://symfony.com/doc/current/reference/configuration/framework.html
+# =============================================================================
+
 framework:
+    # -------------------------------------------------------------------------
+    # CLÉ SECRÈTE (secret)
+    # -------------------------------------------------------------------------
+    # Une longue chaîne de caractères aléatoires, unique à ton application.
+    # Elle sert à signer et sécuriser des données sensibles :
+    #   - les tokens CSRF (protection contre les attaques de formulaires)
+    #   - les cookies signés
+    #   - les liens de vérification d'email
+    #
+    # IMPORTANT : Cette valeur doit rester SECRÈTE et ne jamais être committée
+    # dans Git. Elle est donc lue depuis la variable d'environnement APP_SECRET
+    # définie dans le fichier .env.
     secret: '%env(APP_SECRET)%'
+
+    # -------------------------------------------------------------------------
+    # SURCHARGE DE LA MÉTHODE HTTP (http_method_override)
+    # -------------------------------------------------------------------------
+    # Les navigateurs web ne supportent nativement que GET et POST.
+    # Cette option permet d'envoyer PUT, PATCH ou DELETE depuis un formulaire HTML
+    # en ajoutant un champ caché "_method" dans le formulaire.
+    # Exemple : <input type="hidden" name="_method" value="DELETE">
+    # Symfony intercepte ce champ et traite la requête comme un DELETE.
     http_method_override: true
 
+    # -------------------------------------------------------------------------
+    # SESSIONS UTILISATEUR (session)
+    # -------------------------------------------------------------------------
+    # Une session est un espace de stockage temporaire côté serveur qui permet
+    # de "se souvenir" d'un utilisateur d'une page à l'autre.
+    # Ex : garder l'utilisateur connecté, stocker son panier, ses préférences...
+    #
     # Note that the session will be started ONLY if you read or write from it.
+    # (La session n'est créée que si on y écrit ou lit quelque chose — optimisation.)
     session: true
 
-    #esi: true
-    #fragments: true
+    #esi: true       # (désactivé) Edge Side Includes : pour assembler des fragments de pages en cache
+    #fragments: true # (désactivé) Permet le rendu de sous-requêtes Symfony dans les templates
 
+# =============================================================================
+# CONFIGURATION SPÉCIALE POUR LES TESTS
+# =============================================================================
+# "when@test" = ce bloc ne s'applique QUE lors de l'exécution des tests automatisés.
 when@test:
     framework:
+        # Active le mode test de Symfony, qui expose des outils supplémentaires
+        # pour inspecter les requêtes/réponses HTTP dans les tests.
         test: true
         session:
+            # En mode test, les sessions sont stockées dans des fichiers temporaires
+            # plutôt qu'en mémoire ou en base, pour isoler chaque test proprement.
             storage_factory_id: session.storage.factory.mock_file

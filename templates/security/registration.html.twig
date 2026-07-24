@@ -1,14 +1,30 @@
+{# ============================================================
+   security/registration.html.twig — Page d'inscription
+   Affiche le formulaire de création de compte pour un nouvel utilisateur.
+   Les champs sont générés automatiquement par Symfony (form_row)
+   à partir du RegistrationFormType défini dans le contrôleur.
+   Ce template hérite du layout de base (base.html.twig).
+   ============================================================ #}
 {% extends "base.html.twig" %}
 
+{# Titre de l'onglet pour la page d'inscription #}
 {% block title %}
     CarXMeet - Inscription
 {% endblock %}
 
+{# Bloc body : contenu principal de la page #}
 {% block body %}
+    {# Conteneur Bootstrap : centré avec un espacement vertical (py-4) #}
     <div class="container py-4">
         <h1 class="mb-4">Créer un compte</h1>
 
+        {# Ouverture du formulaire d'inscription.
+           "form" est la variable passée depuis RegistrationController.
+           Les attributs "row g-3" appliquent la grille Bootstrap au formulaire. #}
         {{ form_start(form, { attr: { class: 'row g-3' } }) }}
+
+            {# Affichage global des erreurs si le formulaire a été soumis
+               mais contient des données invalides #}
             {% if form.vars.submitted and not form.vars.valid %}
                 <div class="col-12">
                     <div class="alert alert-danger">
@@ -17,19 +33,42 @@
                 </div>
             {% endif %}
 
+            {# Champ : prénom (col-md-6 = moitié de la largeur sur tablette et plus) #}
             <div class="col-md-6">{{ form_row(form.firstName) }}</div>
+
+            {# Champ : nom de famille #}
             <div class="col-md-6">{{ form_row(form.lastName) }}</div>
+
+            {# Champ : pseudo / nom d'utilisateur #}
             <div class="col-md-6">{{ form_row(form.username) }}</div>
+
+            {# Champ : numéro de téléphone #}
             <div class="col-md-6">{{ form_row(form.phone) }}</div>
+
+            {# Champ : adresse email (pleine largeur) #}
             <div class="col-12">{{ form_row(form.email) }}</div>
+
+            {# Champ : upload de la photo de profil (image) #}
             <div class="col-12">{{ form_row(form.profilePhoto) }}</div>
+
+            {# Champ : mot de passe (première saisie) — moitié de la largeur #}
             <div class="col-md-6">{{ form_row(form.password.first) }}</div>
+
+            {# Champ : confirmation du mot de passe (deuxième saisie) #}
             <div class="col-md-6">{{ form_row(form.password.second) }}</div>
+
+            {# Champs réseaux sociaux : 4 colonnes chacun sur tablette #}
             <div class="col-md-4">{{ form_row(form.snapchat) }}</div>
             <div class="col-md-4">{{ form_row(form.instagram) }}</div>
             <div class="col-md-4">{{ form_row(form.twitter) }}</div>
+
+            {# Champ : TikTok (pleine largeur) #}
             <div class="col-12">{{ form_row(form.tiktok) }}</div>
+
+            {# Bouton de soumission (rendu automatiquement depuis le FormType) #}
             <div class="col-12">{{ form_row(form.submit) }}</div>
+
+        {# Fermeture du formulaire — génère aussi les champs cachés (CSRF, etc.) #}
         {{ form_end(form) }}
     </div>
 {% endblock %}

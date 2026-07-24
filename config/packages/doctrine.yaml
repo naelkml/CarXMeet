@@ -1,48 +1,119 @@
+# =============================================================================
+# FICHIER : config/packages/doctrine.yaml
+# RÔLE    : Configure Doctrine, le composant qui fait le lien entre
+#           ton code PHP et ta base de données.
+#
+# Doctrine est un ORM (Object-Relational Mapper) : il te permet de manipuler
+# des objets PHP (ex: un objet User) et il se charge tout seul de les
+# transformer en lignes de base de données, et vice-versa.
+# Tu n'as donc presque jamais besoin d'écrire du SQL à la main !
+# =============================================================================
+
 doctrine:
+    # -------------------------------------------------------------------------
+    # DBAL — Database Abstraction Layer (couche d'abstraction de base de données)
+    # -------------------------------------------------------------------------
+    # DBAL gère la connexion brute à la base de données (login, mot de passe,
+    # nom de la base, type de serveur...).
     dbal:
+        # L'URL de connexion à la base de données.
+        # Elle est lue depuis la variable d'environnement DATABASE_URL définie
+        # dans le fichier .env (ex: postgresql://user:pass@localhost/carxmeet)
+        # Le préfixe "resolve:" indique à Symfony de résoudre les éventuelles
+        # sous-variables contenues dans cette URL.
         url: '%env(resolve:DATABASE_URL)%'
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
+        # Si tu utilises PostgreSQL 16, décommente et adapte cette ligne :
         #server_version: '16'
 
+        # Active la collecte des traces d'exécution SQL dans le profiler Symfony.
+        # '%kernel.debug%' vaut "true" en développement, "false" en production.
+        # En production, on désactive pour éviter de ralentir l'application.
         profiling_collect_backtrace: '%kernel.debug%'
+
+    # -------------------------------------------------------------------------
+    # ORM — Object-Relational Mapper (le cœur de Doctrine)
+    # -------------------------------------------------------------------------
+    # L'ORM fait correspondre tes classes PHP (entités) aux tables SQL.
     orm:
+        # Vérifie que les fichiers de mapping XML sont valides (sécurité supplémentaire).
         validate_xml_mapping: true
+
+        # Stratégie de nommage : comment les noms de classes/propriétés PHP
+        # sont convertis en noms de tables/colonnes SQL.
+        # "underscore_number_aware" = MaClasse → ma_classe, userId → user_id
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+
+        # Préférence pour la génération des identifiants (clés primaires auto-incrémentées).
+        # Sur PostgreSQL, on utilise le type natif "identity" (GENERATED ALWAYS AS IDENTITY).
         identity_generation_preferences:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+
+        # Détecte et enregistre automatiquement toutes les entités trouvées
+        # dans les dossiers configurés ci-dessous. Pas besoin de les déclarer une par une.
         auto_mapping: true
+
+        # Déclare où Doctrine doit chercher tes entités (tes classes PHP qui
+        # représentent les tables de la base de données).
         mappings:
             App:
-                type: attribute
-                is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                type: attribute        # Les métadonnées sont définies via des attributs PHP (#[Entity], #[Column], etc.)
+                is_bundle: false       # Ce n'est pas un bundle externe, c'est notre propre code
+                dir: '%kernel.project_dir%/src/Entity'  # Dossier contenant les entités
+                prefix: 'App\Entity'   # Namespace PHP des entités
+                alias: App             # Alias court utilisable dans les requêtes DQL
+
+        # Désactive la résolution automatique des contrôleurs via le mapping Doctrine.
+        # À false = les contrôleurs ne sont pas détectés comme entités (comportement souhaité).
         controller_resolver:
             auto_mapping: false
 
+# =============================================================================
+# CONFIGURATION SPÉCIALE POUR LES TESTS
+# =============================================================================
+# "when@test" = ce bloc ne s'applique QUE dans l'environnement de test.
+# On utilise une base de données SÉPARÉE pour les tests, afin de ne jamais
+# polluer ou écraser la base de développement ou de production.
 when@test:
     doctrine:
         dbal:
+            # Ajoute un suffixe au nom de la base de données.
+            # Ex : "carxmeet" devient "carxmeet_test" (ou "carxmeet_test1" avec ParaTest).
+            # "TEST_TOKEN" est normalement défini par ParaTest (outil de tests parallèles).
             # "TEST_TOKEN" is typically set by ParaTest
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
+# =============================================================================
+# CONFIGURATION SPÉCIALE POUR LA PRODUCTION
+# =============================================================================
+# "when@prod" = ce bloc ne s'applique QUE en production (site en ligne).
+# En production, on active des caches pour accélérer les requêtes Doctrine.
 when@prod:
     doctrine:
         orm:
+            # Cache pour les requêtes DQL/SQL déjà compilées.
+            # Évite de recompiler la même requête à chaque appel → gain de performance.
             query_cache_driver:
                 type: pool
-                pool: doctrine.system_cache_pool
+                pool: doctrine.system_cache_pool  # utilise le pool de cache système
+
+            # Cache pour les résultats de requêtes.
+            # Si la même requête est exécutée souvent, le résultat est mis en cache
+            # et n'est pas recalculé à chaque fois → énorme gain de performance.
             result_cache_driver:
                 type: pool
-                pool: doctrine.result_cache_pool
+                pool: doctrine.result_cache_pool  # utilise le pool de cache applicatif
 
+    # Définit les pools de cache utilisés par Doctrine ci-dessus.
+    # Un "pool" est un espace de stockage temporaire pour les données en cache.
     framework:
         cache:
             pools:
+                # Pool de cache pour les résultats de requêtes → utilise le cache applicatif (fichiers/Redis...)
                 doctrine.result_cache_pool:
                     adapter: cache.app
+                # Pool de cache pour les métadonnées système → utilise le cache système (souvent APCu)
                 doctrine.system_cache_pool:
                     adapter: cache.system

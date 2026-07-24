@@ -1,21 +1,45 @@
+{# ============================================================
+   security/home.html.twig — Page d'accueil (tableau de bord)
+   C'est la première page visible après la connexion.
+   Elle affiche :
+     - L'avatar et le nom de l'utilisateur connecté
+     - Des liens de navigation (profil, utilisateurs, amis, déconnexion)
+     - La liste des régions disponibles (pour accéder aux événements par zone)
+   Ce template hérite du layout de base (base.html.twig).
+   ============================================================ #}
 {% extends "base.html.twig" %}
 
+{# Titre de l'onglet pour la page d'accueil #}
 {% block title %}
  CarXMeet - Acceuil
 {% endblock %}
 
+{# Bloc body : contenu principal de la page #}
 {% block body %}
     <div class ="container">
+
+        {# ---------------------------------------------------------------
+           En-tête de la page d'accueil
+           Ligne flex : avatar + titre à gauche, boutons de navigation à droite
+           --------------------------------------------------------------- #}
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px;">
             <div style="display: flex; align-items: center; gap: 12px;">
+                {# Récupération de l'utilisateur actuellement connecté via app.user #}
                 {% set u = app.user %}
+
+                {# Avatar de l'utilisateur connecté (54x54 px).
+                   app.user est l'objet User Symfony de la session courante.
+                   profileImageBase64 est l'image de profil encodée en base64
+                   (stockée directement en base de données). #}
                 <div class="cxm-avatar" style="width: 54px; height: 54px;">
                     {% if u and u.profileImageBase64 %}
                         <img src="data:image/jpeg;base64,{{ u.profileImageBase64 }}" alt="Photo de profil" loading="lazy" decoding="async">
                     {% endif %}
                 </div>
+
                 <div>
                     <h1 style="margin: 0; font-size: 22px;">Acceuil</h1>
+                    {# Affiche le pseudo de l'utilisateur connecté sous le titre #}
                     {% if u %}
                         <div style="margin-top: 4px; font-size: 13px; color: #6b7280;">
                             Connecté en tant que <strong style="color: #111827;">{{ u.username }}</strong>
@@ -24,26 +48,47 @@
                 </div>
             </div>
 
+            {# ---------------------------------------------------------------
+               Boutons de navigation rapide
+               --------------------------------------------------------------- #}
             <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                {# Lien vers la page d'édition du profil utilisateur #}
                 <a href="{{ path('app_user_edit') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
                     Modifier mon profil
                 </a>
+
+                {# Lien vers la liste de tous les utilisateurs #}
                 <a href="{{ path('app_users') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; color: #111827; text-decoration: none;">
                     Utilisateurs
                 </a>
+
+                {# Lien vers la liste des amis de l'utilisateur connecté #}
                 <a href="{{ path('app_friendship_list') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; color: #111827; text-decoration: none;">
                     Amis
                 </a>
+
+                {# Lien de déconnexion — invalide la session en cours #}
                 <a href="{{ path('security.logout') }}" style="display: inline-block; padding: 10px 12px; border-radius: 10px; background: #111827; color: white; text-decoration: none;">
                     Se déconnecter
                 </a>
             </div>
         </div>
 
+        {# ---------------------------------------------------------------
+           Section Régions
+           Affiche toutes les régions disponibles comme liens vers les
+           événements filtrés par région.
+           "regions" est la liste passée depuis HomeController.
+           --------------------------------------------------------------- #}
         <section style="margin-top: 18px;">
             <h2 style="margin: 0 0 10px; font-size: 18px;">Régions</h2>
 
+            {# Grille responsive : colonnes d'au moins 220px, auto-ajustées #}
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                {# Boucle sur toutes les régions.
+                   Chaque carte est un lien vers les événements de cette région.
+                   "path('app_events', { region: region.id })" génère l'URL
+                   /evenements?region=X #}
                 {% for region in regions %}
                     <a
                         href="{{ path('app_events', { region: region.id }) }}"
@@ -52,6 +97,8 @@
                         <div style="font-weight: 700;">{{ region.name }}</div>
                     </a>
                 {% else %}
+                    {# Message affiché si aucune région n'existe en base de données.
+                       Indique que les fixtures ou migrations doivent être exécutées. #}
                     <div style="padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280;">
                         Aucune région en base. (Les fixtures/migrations doivent ajouter les régions.)
                     </div>

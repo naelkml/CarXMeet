@@ -1,4 +1,51 @@
 <?php
+/*
+|--------------------------------------------------------------------------
+| CONTROLEUR DES ÉVÉNEMENTS
+|--------------------------------------------------------------------------
+|
+| Ce contrôleur gère toutes les actions liées aux événements de
+| l'application CarXMeet.
+|
+| Un contrôleur est une classe qui reçoit les requêtes envoyées par
+| l'utilisateur (clic sur un bouton, ouverture d'une page, envoi d'un
+| formulaire...) puis effectue les traitements nécessaires avant de
+| renvoyer une réponse.
+|
+| Les principales fonctionnalités de ce contrôleur sont :
+|
+| - Afficher la liste de tous les événements.
+| - Afficher le détail d'un événement.
+| - Créer un nouvel événement.
+| - Modifier un événement existant.
+| - Permettre à un utilisateur de participer à un événement.
+| - Permettre à un utilisateur de quitter un événement.
+| - Permettre aux utilisateurs de noter un événement.
+| - Gérer les photos d'un événement.
+| - Supprimer un événement via l'API pour les administrateurs.
+|
+| Les données sont enregistrées et récupérées grâce à Doctrine,
+| l'ORM utilisé par Symfony pour communiquer avec la base de données.
+|
+| Le contrôleur utilise également différents Repository afin de
+| rechercher des informations comme :
+| - les événements,
+| - les participations,
+| - les notes,
+| - les convois,
+| - les amis,
+| - les régions.
+|
+| Plusieurs vérifications de sécurité sont présentes :
+| - contrôle des rôles (ROLE_USER, ROLE_EVENT_MANAGER),
+| - vérification des jetons CSRF lors des formulaires,
+| - contrôle des permissions avant certaines actions.
+|
+| Après chaque action importante (création, modification, suppression,
+| participation...), un message temporaire (Flash Message) est affiché
+| afin d'informer l'utilisateur du résultat de son action.
+|
+*/
 
 namespace App\Controller;
 
@@ -24,6 +71,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class EventsController extends AbstractController
 {
+    // Affiche la liste des événements.
+    // L'utilisateur peut également filtrer les événements selon une région ou les trier suivant différents critères.
     #[Route('/events', name: 'app_events', methods: ['GET'])]
     public function index(Request $request, EventsRepository $eventsRepository, RegionRepository $regionRepository): Response
     {
@@ -46,6 +95,10 @@ final class EventsController extends AbstractController
         ]);
     }
 
+    // Affiche toutes les informations d'un événement.
+    // Cette méthode récupère également les participants,
+    // les convois, les notes et les informations permettant
+    // de savoir si l'utilisateur participe déjà à l'événement.
     #[Route('/events/{id}', name: 'app_events_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
     public function show(
         Events $event,
@@ -115,6 +168,11 @@ final class EventsController extends AbstractController
         ]);
     }
 
+    // Permet à un utilisateur de s'inscrire à un événement.
+    // Avant l'inscription, plusieurs vérifications sont effectuées :
+    // l'utilisateur doit être connecté,
+    // le jeton CSRF doit être valide,
+    // l'utilisateur ne doit pas déjà participer.
     #[Route('/events/{id}/participate', name: 'app_events_participate', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function participate(
         Request $request,
@@ -152,6 +210,9 @@ final class EventsController extends AbstractController
         return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
     }
 
+    // Permet à un utilisateur de quitter un événement.
+    // Si l'utilisateur participe déjà, sa participation
+    // est supprimée de la base de données.
     #[Route('/events/{id}/leave', name: 'app_events_leave', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function leave(
         Request $request,
@@ -184,6 +245,12 @@ final class EventsController extends AbstractController
         return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
     }
 
+
+    // Crée un nouvel événement.
+    // Les informations saisies dans le formulaire sont
+    // enregistrées dans la base de données.
+    // Cette méthode gère également l'image de couverture
+    // ainsi que les photos de la galerie.
     #[Route('/events/new', name: 'app_events_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -238,7 +305,10 @@ final class EventsController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
+    // Modifie un événement existant.
+    // Seul l'organisateur ou un gestionnaire d'événements
+    // peut effectuer cette opération.
+    // Les nouvelles informations sont ensuite sauvegardées.
     #[Route('/events/{id}/edit', name: 'app_events_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
     public function edit(Request $request, Events $event, EntityManagerInterface $em): Response
     {
@@ -299,6 +369,9 @@ final class EventsController extends AbstractController
         ]);
     }
 
+    // Permet à un utilisateur de donner une note à un événement.
+    // Si une note existe déjà, elle est mise à jour.
+    // La moyenne des notes est ensuite recalculée.
     #[Route('/events/{id}/rate', name: 'app_events_rate', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function rate(Request $request, Events $event, EventRatingRepository $eventRatingRepository, EntityManagerInterface $em): Response
     {
@@ -340,6 +413,9 @@ final class EventsController extends AbstractController
         return $this->redirectToRoute('app_events_show', ['id' => $event->getId()]);
     }
 
+    // Supprime une photo de la galerie d'un événement.
+    // Cette action est réservée aux gestionnaires d'événements
+    // après vérification des droits d'accès.
     #[Route('/events/{id}/photos/{photo}/delete', name: 'app_events_photo_delete', requirements: ['id' => '\\d+', 'photo' => '\\d+'], methods: ['POST'])]
     public function deletePhoto(Request $request, Events $event, EventPhoto $photo, EntityManagerInterface $em): Response
     {
@@ -361,6 +437,9 @@ final class EventsController extends AbstractController
         return $this->redirectToRoute('app_events_edit', ['id' => $event->getId()]);
     }
 
+    // Supprime définitivement un événement via une route API.
+    // Cette fonctionnalité est réservée aux gestionnaires
+    // d'événements disposant des droits nécessaires.
     #[Route('/api/events/{id}', methods: ['DELETE'])]
     public function apiDelete(Events $event, EntityManagerInterface $em): JsonResponse
     {

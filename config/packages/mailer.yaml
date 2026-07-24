@@ -1,3 +1,26 @@
+# =============================================================================
+# FICHIER : config/packages/mailer.yaml
+# RÔLE    : Configure le service d'envoi d'emails de l'application.
+#
+# Symfony utilise le composant "Mailer" pour envoyer des emails.
+# Ce composant supporte de nombreux fournisseurs d'emails :
+#   - SMTP classique (Gmail, serveur mail perso...)
+#   - Services tiers : SendGrid, Mailgun, Amazon SES, Postmark...
+#   - Mailtrap (pour capturer les emails en développement sans vraiment les envoyer)
+#
+# La connexion au service d'email est définie par un DSN (Data Source Name),
+# une URL spéciale qui ressemble à : smtp://user:pass@smtp.example.com:587
+# ou pour un service cloud : sendgrid+api://KEY@default
+# =============================================================================
+
 framework:
     mailer:
+        # DSN = URL de connexion au service d'envoi d'emails.
+        # La valeur réelle est lue depuis la variable d'environnement MAILER_DSN
+        # dans le fichier .env (pour ne pas exposer les identifiants dans le code).
+        #
+        # Exemples de valeurs possibles pour MAILER_DSN dans .env :
+        #   MAILER_DSN=smtp://user:password@smtp.gmail.com:587
+        #   MAILER_DSN=sendgrid+api://SENDGRID_KEY@default
+        #   MAILER_DSN=null://null   ← ne rien envoyer (mode test)
         dsn: '%env(MAILER_DSN)%'
